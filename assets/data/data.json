@@ -1,0 +1,9 @@
+{
+  "Teachers": [
+    { "name": "Teacher 1 กดิวสเสวหกสาวดสวหดาวส", "image": "avatar.jpg" },
+    { "name": "Teacher 2", "image": "avatar.jpg" },
+    { "name": "Teacher 3", "image": "avatar.jpg" },
+    { "name": "Teacher 4", "image": "avatar.jpg" },
+    { "name": "Teacher 5", "image": "avatar.jpg" }
+  ]
+}

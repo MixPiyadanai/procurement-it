@@ -1,0 +1,241 @@
+{
+  "metadata": {
+    "version": "1",
+    "name": "procurement-it",
+    "note": "หลีกเลี่ยงการแก้ไขไฟล์นี้โดยตรง"
+  },
+  "office": {
+    "list": [
+      {
+        "items": [
+          {
+            "name": "Tuya Wi-Fi Multi-Function with Light and Speaker Gateway(ZXGWMA-01) เกตเวย์",
+            "price": 1350,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "SHIDAI ตัวดูดควัน พัดลมระบายอากาศ 6 นิ้ว พัดลมดูดอากาศ 2600 หมุนต่อนาที",
+            "price": 1180,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "เทอร์มินอลสีดำ 12P TB25-12P STB 30E 12P",
+            "price": 65,
+            "quantity": 1,
+            "unit": "อัน"
+          },
+          {
+            "name": "ไฟกระพริบโซล่าเซลล์ ไฟกระพริบ 100 ดวง 10 เมตร ไฟประดับ ไฟ LED ไฟโซล่าเซลล์",
+            "price": 480,
+            "quantity": 2,
+            "unit": "ชุด"
+          },
+          {
+            "name": "Maker Driver : Maker Drive: Simplifying H-Bridge Motor Driver for Beginner",
+            "price": 190,
+            "quantity": 2,
+            "unit": "ตัว"
+          },
+          {
+            "name": "สวิตช์ไฟ Zigbee ไม่ใช้นิวตรอน ไม่ใช้คาปาฯ (N Optional) แบบปุ่มกด รุ่น ZTB สวิตช์อัจฉริยะ",
+            "price": 750,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "ไพล็อท LED สีเขียว LDPI0004 TIGER G 220VAC",
+            "price": 70,
+            "quantity": 2,
+            "unit": "หลอด"
+          },
+          {
+            "name": "65W HP Pavilion 14-al119tx Y8J17PA AC Adapter + Free Cord",
+            "price": 790,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "ตู้มีหลังคา NANO-102W(11.5x13x6)",
+            "price": 280,
+            "quantity": 2,
+            "unit": "ตู้"
+          },
+          {
+            "name": "เนมเพลท ON",
+            "price": 14,
+            "quantity": 2,
+            "unit": "อัน"
+          },
+          {
+            "name": "สวิตช์ลูกศร 3 จังหวะ 25มม T&B ST-251 1A1B1C",
+            "price": 70,
+            "quantity": 2,
+            "unit": "ตัว"
+          },
+          {
+            "name": "Tuya Wifi แบบพกพามีเตอร์วัดคุณภาพอากาศ 7in1 PM2.5 CO2 TVOC HCHO AQI",
+            "price": 1150,
+            "quantity": 1,
+            "unit": "ตัว"
+          }
+        ]
+      }
+    ]
+  },
+  "data": {
+    "list": [
+      {
+        "teacher_name": "เรียวเม็ง สุคุนะ",
+        "subject": "วิทยาการก้าวหน้าระบบสมองกลฝังตัว และ ไอโอที",
+        "items": [
+          {
+            "name": "Tuya Wifi แบบพกพามีเตอร์วัดคุณภาพอากาศ 7in1 PM2.5 CO2 TVOC HCHO AQI",
+            "price": 1150,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "ไฟกระพริบโซล่าเซลล์ ไฟกระพริบ 100 ดวง 10 เมตร ไฟประดับ ไฟ LED ไฟโซล่าเซลล์",
+            "price": 480,
+            "quantity": 2,
+            "unit": "ชุด"
+          },
+          {
+            "name": "โคมไฟหัวเสา โคมไฟหัวเสาทรงกลม โคมไฟโซล่าเซลล์ ใช้พลังงานแสงอาทิตย์ ไฟ LED",
+            "price": 375,
+            "quantity": 2,
+            "unit": "อัน"
+          },
+          {
+            "name": "Tuya Wi-Fi Multi-Function with Light and Speaker Gateway(ZXGWMA-01) เกตเวย์",
+            "price": 1350,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "Maker Driver : Maker Drive: Simplifying H-Bridge Motor Driver for Beginner",
+            "price": 190,
+            "quantity": 2,
+            "unit": "ตัว"
+          },
+          {
+            "name": "SHIDAI ตัวดูดควัน พัดลมระบายอากาศ 6 นิ้ว พัดลมดูดอากาศ 2600 หมุนต่อนาที",
+            "price": 1180,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "ไพล็อท LED สีเขียว LDPI0004 TIGER G 220VAC",
+            "price": 70,
+            "quantity": 2,
+            "unit": "หลอด"
+          },
+          {
+            "name": "เนมเพลท ON",
+            "price": 14,
+            "quantity": 2,
+            "unit": "อัน"
+          },
+          {
+            "name": "ตู้มีหลังคา NANO-102W(11.5x13x6)",
+            "price": 280,
+            "quantity": 2,
+            "unit": "ตู้"
+          },
+          {
+            "name": "65W HP Pavilion 14-al119tx Y8J17PA AC Adapter + Free Cord",
+            "price": 790,
+            "quantity": 1,
+            "unit": "ตัว"
+          },
+          {
+            "name": "เทอร์มินอลสีดำ 12P TB25-12P STB 30E 12P",
+            "price": 65,
+            "quantity": 1,
+            "unit": "อัน"
+          },
+          {
+            "name": "สวิตช์ลูกศร 3 จังหวะ 25มม T&B ST-251 1A1B1C",
+            "price": 70,
+            "quantity": 2,
+            "unit": "ตัว"
+          },
+          {
+            "name": "สวิตช์ไฟ Zigbee ไม่ใช้นิวตรอน ไม่ใช้คาปาฯ (N Optional) แบบปุ่มกด รุ่น ZTB สวิตช์อัจฉริยะ",
+            "price": 750,
+            "quantity": 1,
+            "unit": "ตัว"
+          }
+        ]
+      },
+      {
+        "teacher_name": "Teacher 2",
+        "subject": "Physics",
+        "items": [
+          {
+            "name": "โน๊ตบุ๊ค",
+            "price": 200.75,
+            "quantity": 2,
+            "unit": "เครื่อง"
+          },
+          {
+            "name": "เมาส์",
+            "price": 50.25,
+            "quantity": 3,
+            "unit": "ตัว"
+          }
+        ]
+      },
+      {
+        "teacher_name": "Teacher 3",
+        "subject": "Biology",
+        "items": [
+          {
+            "name": "หูฟัง",
+            "price": 80.9,
+            "quantity": 1,
+            "unit": "อัน"
+          },
+          {
+            "name": "แท่นชาร์จมือถือ",
+            "price": 120.25,
+            "quantity": 2,
+            "unit": "อัน"
+          }
+        ]
+      },
+      {
+        "teacher_name": "Teacher 4",
+        "subject": "Mathematics",
+        "items": [
+          {
+            "name": "กระดาษ A4",
+            "price": 30.75,
+            "quantity": 5,
+            "unit": "แผ่น"
+          },
+          {
+            "name": "ปากกาดำ",
+            "price": 15.3,
+            "quantity": 10,
+            "unit": "ด้าม"
+          }
+        ]
+      },
+      {
+        "teacher_name": "Teacher 5",
+        "subject": "History",
+        "items": [
+          {
+            "name": "หนังสือประวัติศาสตร์",
+            "price": 150.6,
+            "quantity": 2,
+            "unit": "เล่ม"
+          }
+        ]
+      }
+    ]
+  }
+}
