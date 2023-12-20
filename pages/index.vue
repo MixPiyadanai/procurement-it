@@ -287,9 +287,9 @@
                   </template>
                   <template v-slot:item.total="{ item }">
                     {{
-                      (item.price * item.quantity).toFixed(2) !== "NaN"
-                        ? (item.price * item.quantity).toFixed(2)
-                        : 0
+                      isNaN(item.quantity) || isNaN(item.price)
+                        ? Math.floor(0).toFixed(2)
+                        : (item.price * Math.floor(item.quantity)).toFixed(2)
                     }}
                   </template>
                   <template v-slot:item.actions="{ item }">
@@ -320,7 +320,9 @@
                             SaveData.office.list[0].items
                               .reduce(
                                 (sum, item) =>
-                                  sum + (item.price * item.quantity || 0),
+                                  sum +
+                                  (item.price * Math.floor(item.quantity) ||
+                                    0.0),
                                 0
                               )
                               .toFixed(2)
@@ -336,7 +338,9 @@
                               SaveData.office.list[0].items
                                 .reduce(
                                   (sum, item) =>
-                                    sum + (item.price * item.quantity || 0),
+                                    sum +
+                                    (item.price * Math.floor(item.quantity) ||
+                                      0.0),
                                   0
                                 )
                                 .toFixed(2)
@@ -586,9 +590,9 @@
                     </template>
                     <template v-slot:item.total="{ item }">
                       {{
-                        (item.price * item.quantity).toFixed(2) !== "NaN"
-                          ? (item.price * item.quantity).toFixed(2)
-                          : 0
+                        isNaN(item.quantity) || isNaN(item.price)
+                          ? Math.floor(0).toFixed(2)
+                          : (item.price * Math.floor(item.quantity)).toFixed(2)
                       }}
                     </template>
                     <template v-slot:item.actions="{ item }">
@@ -619,7 +623,9 @@
                               data.items
                                 .reduce(
                                   (sum, item) =>
-                                    sum + (item.price * item.quantity || 0),
+                                    sum +
+                                    (item.price * Math.floor(item.quantity) ||
+                                      0),
                                   0
                                 )
                                 .toFixed(2)
@@ -635,7 +641,9 @@
                                 data.items
                                   .reduce(
                                     (sum, item) =>
-                                      sum + (item.price * item.quantity || 0),
+                                      sum +
+                                      (item.price * Math.floor(item.quantity) ||
+                                        0),
                                     0
                                   )
                                   .toFixed(2)
@@ -777,6 +785,9 @@ export default {
   computed: {},
   methods: {
     BahtText(number) {
+      if (number === Math.floor(0).toFixed(2)) {
+        return "ศูนย์บาทถ้วน";
+      }
       return THBText(number);
     },
     exportSaveData() {
