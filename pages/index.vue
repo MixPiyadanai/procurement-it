@@ -239,7 +239,9 @@
                       large
                       persistent
                     >
-                      <div>{{ props.item.quantity }}</div>
+                      <div>
+                        {{ formatNumberWithCommas(props.item.quantity) }}
+                      </div>
                       <template v-slot:input>
                         <v-text-field
                           v-model="props.item.quantity"
@@ -257,7 +259,11 @@
                       large
                       persistent
                     >
-                      <div>{{ formatPrice(props.item.price) }}</div>
+                      <div>
+                        {{
+                          formatNumberWithCommas(formatPrice(props.item.price))
+                        }}
+                      </div>
                       <template v-slot:input>
                         <v-text-field
                           v-model="props.item.price"
@@ -287,9 +293,11 @@
                   </template>
                   <template v-slot:item.total="{ item }">
                     {{
-                      isNaN(item.quantity) || isNaN(item.price)
-                        ? Math.floor(0).toFixed(2)
-                        : (item.price * Math.floor(item.quantity)).toFixed(2)
+                      formatNumberWithCommas(
+                        isNaN(item.quantity) || isNaN(item.price)
+                          ? Math.floor(0).toFixed(2)
+                          : (item.price * Math.floor(item.quantity)).toFixed(2)
+                      )
                     }}
                   </template>
                   <template v-slot:item.actions="{ item }">
@@ -304,10 +312,12 @@
                         จำนวนวัสดุทั้งหมด
                         <span class="font-weight-bold">
                           {{
-                            SaveData.office.list[0].items.reduce(
-                              (sum, item) =>
-                                sum + (parseInt(item.quantity) || 0),
-                              0
+                            formatNumberWithCommas(
+                              SaveData.office.list[0].items.reduce(
+                                (sum, item) =>
+                                  sum + (parseInt(item.quantity) || 0),
+                                0
+                              )
                             )
                           }}
                         </span>
@@ -317,15 +327,17 @@
                         ราคารวมทั้งหมด
                         <span class="font-weight-bold">
                           {{
-                            SaveData.office.list[0].items
-                              .reduce(
-                                (sum, item) =>
-                                  sum +
-                                  (item.price * Math.floor(item.quantity) ||
-                                    0.0),
-                                0
-                              )
-                              .toFixed(2)
+                            formatNumberWithCommas(
+                              SaveData.office.list[0].items
+                                .reduce(
+                                  (sum, item) =>
+                                    sum +
+                                    (item.price * Math.floor(item.quantity) ||
+                                      0.0),
+                                  0
+                                )
+                                .toFixed(2)
+                            )
                           }}
                         </span>
                         บาท
@@ -542,7 +554,9 @@
                         large
                         persistent
                       >
-                        <div>{{ props.item.quantity }}</div>
+                        <div>
+                          {{ formatNumberWithCommas(props.item.quantity) }}
+                        </div>
                         <template v-slot:input>
                           <v-text-field
                             v-model="props.item.quantity"
@@ -560,7 +574,13 @@
                         large
                         persistent
                       >
-                        <div>{{ formatPrice(props.item.price) }}</div>
+                        <div>
+                          {{
+                            formatNumberWithCommas(
+                              formatPrice(props.item.price)
+                            )
+                          }}
+                        </div>
                         <template v-slot:input>
                           <v-text-field
                             v-model="props.item.price"
@@ -590,9 +610,13 @@
                     </template>
                     <template v-slot:item.total="{ item }">
                       {{
-                        isNaN(item.quantity) || isNaN(item.price)
-                          ? Math.floor(0).toFixed(2)
-                          : (item.price * Math.floor(item.quantity)).toFixed(2)
+                        formatNumberWithCommas(
+                          isNaN(item.quantity) || isNaN(item.price)
+                            ? Math.floor(0).toFixed(2)
+                            : (item.price * Math.floor(item.quantity)).toFixed(
+                                2
+                              )
+                        )
                       }}
                     </template>
                     <template v-slot:item.actions="{ item }">
@@ -607,10 +631,12 @@
                           จำนวนวัสดุทั้งหมด
                           <span class="font-weight-bold">
                             {{
-                              data.items.reduce(
-                                (sum, item) =>
-                                  sum + (parseInt(item.quantity) || 0),
-                                0
+                              formatNumberWithCommas(
+                                data.items.reduce(
+                                  (sum, item) =>
+                                    sum + (parseInt(item.quantity) || 0),
+                                  0
+                                )
                               )
                             }}
                           </span>
@@ -620,15 +646,17 @@
                           ราคารวมทั้งหมด
                           <span class="font-weight-bold">
                             {{
-                              data.items
-                                .reduce(
-                                  (sum, item) =>
-                                    sum +
-                                    (item.price * Math.floor(item.quantity) ||
-                                      0),
-                                  0
-                                )
-                                .toFixed(2)
+                              formatNumberWithCommas(
+                                data.items
+                                  .reduce(
+                                    (sum, item) =>
+                                      sum +
+                                      (item.price * Math.floor(item.quantity) ||
+                                        0),
+                                    0
+                                  )
+                                  .toFixed(2)
+                              )
                             }}
                           </span>
                           บาท
@@ -789,6 +817,9 @@ export default {
         return "ศูนย์บาทถ้วน";
       }
       return THBText(number);
+    },
+    formatNumberWithCommas(number) {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
     exportSaveData() {
       if (this.SaveData.metadata.save_key === "") {

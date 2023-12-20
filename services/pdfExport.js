@@ -20,27 +20,30 @@ export function standardPDF(data, type) {
       { text: index + 1, style: "alignCenter" },
       { text: item.name === "" ? "-" : item.name },
       {
-        text:
+        text: formatNumberWithCommas(
           isNaN(item.quantity) || item.quantity === ""
             ? 0
-            : Number(item.quantity).toFixed(0),
+            : Number(item.quantity).toFixed(0)
+        ),
         style: "alignCenter",
       },
       { text: item.unit === "" ? "-" : item.unit, style: "alignCenter" },
       {
-        text:
+        text: formatNumberWithCommas(
           isNaN(item.price) || item.price === ""
             ? 0.0
-            : Number(item.price).toFixed(2),
+            : Number(item.price).toFixed(2)
+        ),
         style: "alignCenter",
         colSpan: 2,
       },
       {},
       {
-        text:
+        text: formatNumberWithCommas(
           isNaN(item.quantity) || isNaN(item.price)
             ? Math.floor(0).toFixed(2)
-            : (item.price * Math.floor(item.quantity)).toFixed(2),
+            : (item.price * Math.floor(item.quantity)).toFixed(2)
+        ),
         style: "alignCenterTotal",
         colSpan: 2,
       },
@@ -57,6 +60,10 @@ export function standardPDF(data, type) {
   let thaiSum = THBText(totalSum);
   if (thaiSum === "") {
     thaiSum = "ศูนย์บาทถ้วน";
+  }
+
+  function formatNumberWithCommas(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
   const docDefinition = {
@@ -178,7 +185,7 @@ export function standardPDF(data, type) {
               "",
               "",
               {
-                text: totalSum.toFixed(2),
+                text: formatNumberWithCommas(totalSum.toFixed(2)),
                 style: "header",
                 colSpan: 2,
               },
