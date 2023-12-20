@@ -7,21 +7,41 @@
       v-model="tab"
       background-color="indigo"
     >
-      <v-tab class="d-flex align-center" href="#officeItems">
+      <v-tab class="d-flex align-center" href="#index">
+        <v-icon class="mr-2">mdi-home</v-icon>
+        <span class="font-weight-bold" style="font-size: larger">หน้าหลัก</span>
+      </v-tab>
+      <v-tab
+        class="d-flex align-center"
+        href="#officeItems"
+        :disabled="!isDataLoaded"
+      >
         <v-icon class="mr-2">mdi-chair-rolling</v-icon>
         <span class="font-weight-bold" style="font-size: larger">สำนักงาน</span>
       </v-tab>
-      <v-tab class="d-flex align-center" href="#singleTeacher">
+      <v-tab
+        class="d-flex align-center"
+        href="#singleTeacher"
+        :disabled="!isDataLoaded"
+      >
         <v-icon class="mr-2">mdi-account</v-icon>
         <span class="font-weight-bold" style="font-size: larger">อาจารย์</span>
       </v-tab>
-      <v-tab class="d-flex align-center" href="#multiTeacher">
+      <v-tab
+        class="d-flex align-center"
+        href="#multiTeacher"
+        :disabled="!isDataLoaded"
+      >
         <v-icon class="mr-2">mdi-account-group</v-icon>
         <span class="font-weight-bold" style="font-size: larger"
           >รวมอาจารย์</span
         >
       </v-tab>
-      <v-tab class="d-flex align-center" href="#summary">
+      <v-tab
+        class="d-flex align-center"
+        href="#summary"
+        :disabled="!isDataLoaded"
+      >
         <v-icon class="mr-2">mdi-view-list</v-icon>
         <span class="font-weight-bold" style="font-size: larger"
           >รายละเอียด</span
@@ -29,6 +49,112 @@
       </v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab">
+      <v-tab-item value="index">
+        <v-row>
+          <v-col cols="12">
+            <v-dialog v-model="uploadJsonOverlay" persistent width="450">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="primary"
+                  v-bind="attrs"
+                  v-on="on"
+                  block
+                  large
+                  class="mb-2"
+                >
+                  <v-icon left>mdi-import</v-icon>
+                  <span class="font-weight-bold">นำเข้าไฟล์บันทึก</span>
+                </v-btn>
+              </template>
+              <v-card light>
+                <v-card-title>
+                  <span>นำเข้าบันทึกข้อมูลรายการจัดซื้อจัดจ้าง</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-file-input
+                    accept="application/json"
+                    label="เลือกไฟล์บันทึก JSON"
+                    prepend-icon="mdi-code-json"
+                    @change="handleFileUpload"
+                    clearable
+                    v-model="jsonFile"
+                  ></v-file-input>
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="accent" text @click="uploadJsonOverlay = false">
+                    ยกเลิก
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    @click="handleUploadJsonSuccess('new')"
+                  >
+                    เริ่มต้นใหม่
+                  </v-btn>
+                  <v-btn
+                    color="success"
+                    :disabled="!isJsonSuccessUpload"
+                    @click="handleUploadJsonSuccess('load')"
+                    >โหลดบันทึก</v-btn
+                  >
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+            <v-btn
+              block
+              color="primary lighten-2"
+              @click="exportSaveData"
+              large
+              class="mb-2"
+              :disabled="!isDataLoaded"
+            >
+              <v-icon left>mdi-export</v-icon>
+              <span class="font-weight-bold">ส่งออกไฟล์บันทึก</span>
+            </v-btn>
+            <v-dialog v-model="wipeFieldOverlay" persistent width="400">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="error"
+                  v-bind="attrs"
+                  v-on="on"
+                  block
+                  large
+                  class="mb-2"
+                  :disabled="!isDataLoaded"
+                >
+                  <v-icon left>mdi-alert-outline</v-icon>
+                  <span class="font-weight-bold">ล้างข้อมูล</span>
+                </v-btn>
+              </template>
+              <v-card light class="d-flex flex-column pt-8">
+                <v-icon style="font-size: 10rem" color="error darken-1">
+                  mdi-alert
+                </v-icon>
+                <span class="text-center" style="font-size: 1.5rem"
+                  >ล้างข้อมูลที่กำลังแสดงผลทั้งหมด</span
+                >
+                <v-divider class="mt-8"></v-divider>
+
+                <v-card-actions class="d-flex justify-end">
+                  <v-btn
+                    color="accent"
+                    @click="wipeFieldOverlay = false"
+                    depressed
+                  >
+                    ยกเลิก
+                  </v-btn>
+                  <v-btn @click="wipeSaveData" text color="error"
+                    >ล้างข้อมูล</v-btn
+                  >
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-col>
+        </v-row>
+      </v-tab-item>
       <v-tab-item value="officeItems">
         <v-row>
           <v-col
@@ -575,104 +701,7 @@
           <v-col cols="12"> รวมอาจารย์ </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item value="summary">
-        <v-row>
-          <v-col cols="12">
-            <v-dialog v-model="uploadJsonOverlay" persistent width="450">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="primary"
-                  v-bind="attrs"
-                  v-on="on"
-                  block
-                  large
-                  class="mb-2"
-                >
-                  <v-icon left>mdi-import</v-icon>
-                  <span class="font-weight-bold">นำเข้าไฟล์บันทึก</span>
-                </v-btn>
-              </template>
-              <v-card light>
-                <v-card-title>
-                  <span>นำเข้าบันทึกข้อมูลรายการจัดซื้อจัดจ้าง</span>
-                </v-card-title>
-                <v-card-text>
-                  <v-file-input
-                    accept="application/json"
-                    label="เลือกไฟล์บันทึก JSON"
-                    prepend-icon="mdi-code-json"
-                    @change="handleFileUpload"
-                    clearable
-                    v-model="jsonFile"
-                  ></v-file-input>
-                </v-card-text>
-
-                <v-divider></v-divider>
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="accent" text @click="uploadJsonOverlay = false">
-                    เริ่มต้นใหม่
-                  </v-btn>
-                  <v-btn
-                    color="primary"
-                    :disabled="!isJsonSuccessUpload"
-                    @click="handleUploadJsonSuccess"
-                    >โหลดบันทึก</v-btn
-                  >
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-            <v-btn
-              block
-              color="primary lighten-2"
-              @click="exportSaveData"
-              large
-              class="mb-2"
-            >
-              <v-icon left>mdi-export</v-icon>
-              <span class="font-weight-bold">ส่งออกไฟล์บันทึก</span>
-            </v-btn>
-            <v-dialog v-model="wipeFieldOverlay" persistent width="400">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="error"
-                  v-bind="attrs"
-                  v-on="on"
-                  block
-                  large
-                  class="mb-2"
-                >
-                  <v-icon left>mdi-alert-outline</v-icon>
-                  <span class="font-weight-bold">ล้างข้อมูล</span>
-                </v-btn>
-              </template>
-              <v-card light class="d-flex flex-column pt-8">
-                <v-icon style="font-size: 10rem" color="error darken-1">
-                  mdi-alert
-                </v-icon>
-                <span class="text-center" style="font-size: 1.5rem"
-                  >ล้างข้อมูลที่กำลังแสดงผลทั้งหมด</span
-                >
-                <v-divider class="mt-8"></v-divider>
-
-                <v-card-actions class="d-flex justify-end">
-                  <v-btn
-                    color="accent"
-                    @click="wipeFieldOverlay = false"
-                    depressed
-                  >
-                    ยกเลิก
-                  </v-btn>
-                  <v-btn @click="wipeSaveData" text color="error"
-                    >ล้างข้อมูล</v-btn
-                  >
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </v-col>
-        </v-row>
-      </v-tab-item>
+      <v-tab-item value="summary"> </v-tab-item>
     </v-tabs-items>
     <v-snackbar
       v-model="snackbar.status"
@@ -705,7 +734,8 @@ export default {
       jsonFile: null,
       fileContent: null,
       isJsonSuccessUpload: false,
-      SaveData: [{ data: { list: [] } }],
+      SaveData: [],
+      isDataLoaded: false,
       itemsHeader: [
         { text: "#", value: "index", sortable: false },
         { text: "ชื่อวัสดุ", value: "name", sortable: false },
@@ -731,7 +761,7 @@ export default {
         color: "",
         icon: "",
       },
-      tab: "summary",
+      tab: "index",
       isNumeric: (v) => /^\d+$/.test(v) || "ต้องเป็นจำนวนเต็ม",
       max8chars: (v) => v.length <= 8 || "ไม่ควรเกิน 8 ตัวอักษร",
       required: (v) => v.length > 0 || "จำเป็นใส่ข้อมูล",
@@ -750,6 +780,20 @@ export default {
       return THBText(number);
     },
     exportSaveData() {
+      if (this.SaveData.metadata.save_key === "") {
+        const characters =
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let key = "";
+        const keyLength = 32;
+        for (let i = 0; i < keyLength; i++) {
+          key += characters.charAt(
+            Math.floor(Math.random() * characters.length)
+          );
+        }
+        console.log("key:", key);
+        this.SaveData.metadata.save_key = key;
+      }
+
       const dateString = new Date().toLocaleDateString("th-TH");
       const fileName = `ไฟล์บันทึกรายละเอียดวัสดุที่จะซื้อหรือจ้าง_ประจำวันที่_${dateString}.json`;
 
@@ -764,8 +808,9 @@ export default {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     },
+
     wipeSaveData() {
-      this.SaveData = {};
+      this.handleUploadJsonSuccess("new");
       this.wipeFieldOverlay = false;
     },
     addTeacher() {
@@ -876,24 +921,41 @@ export default {
         reader.readAsText(file);
       }
     },
-    handleUploadJsonSuccess() {
-      if (this.jsonContent.metadata.version !== "1") {
-        // Handle the case where the version is not a match
+    handleUploadJsonSuccess(type) {
+      if (type === "load") {
+        if (this.jsonContent.metadata.version !== "1") {
+          this.snackbar.status = true;
+          this.snackbar.text = "เวอร์ชั่นของบันทึกไม่ตรงกัน!";
+          this.snackbar.color = "error darken-1";
+          this.snackbar.icon = "mdi-alert";
+          return;
+        }
+        this.SaveData = [];
+        this.SaveData = JSON.parse(JSON.stringify(this.jsonContent));
+        this.uploadJsonOverlay = false;
         this.snackbar.status = true;
-        this.snackbar.text = "เวอร์ชั่นของบันทึกไม่ตรงกัน!";
-        this.snackbar.color = "error darken-1";
-        this.snackbar.icon = "mdi-alert";
-        return;
-      }
+        this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
+        this.snackbar.color = "success darken-1";
+        this.snackbar.icon = "mdi-check";
+        this.tab = "office";
+      } else if (type === "new") {
+        const emptyJsonPath = "/empty.json";
 
-      this.SaveData = [];
-      this.SaveData = JSON.parse(JSON.stringify(this.jsonContent));
-      this.uploadJsonOverlay = false;
-      this.snackbar.status = true;
-      this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
-      this.snackbar.color = "success darken-1";
-      this.snackbar.icon = "mdi-check";
-      this.tab = "office";
+        fetch(emptyJsonPath)
+          .then((response) => response.json())
+          .then((emptyJsonContent) => {
+            this.SaveData = JSON.parse(JSON.stringify(emptyJsonContent));
+            this.uploadJsonOverlay = false;
+            this.snackbar.status = true;
+            this.snackbar.text = "สร้างบันทึกใหม่สำเร็จ";
+            this.snackbar.color = "success darken-1";
+            this.snackbar.icon = "mdi-check";
+          })
+          .catch((error) => {
+            console.error("Error loading empty.json", error);
+          });
+      }
+      this.isDataLoaded = true;
     },
     exportPDF(index, type) {
       switch (type) {
