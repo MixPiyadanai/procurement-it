@@ -239,7 +239,9 @@
                       large
                       persistent
                     >
-                      <div>{{ props.item.quantity }}</div>
+                      <div>
+                        {{ formatNumberWithCommas(props.item.quantity) }}
+                      </div>
                       <template v-slot:input>
                         <v-text-field
                           v-model="props.item.quantity"
@@ -257,7 +259,11 @@
                       large
                       persistent
                     >
-                      <div>{{ formatPrice(props.item.price) }}</div>
+                      <div>
+                        {{
+                          formatNumberWithCommas(formatPrice(props.item.price))
+                        }}
+                      </div>
                       <template v-slot:input>
                         <v-text-field
                           v-model="props.item.price"
@@ -287,9 +293,11 @@
                   </template>
                   <template v-slot:item.total="{ item }">
                     {{
-                      (item.price * item.quantity).toFixed(2) !== "NaN"
-                        ? (item.price * item.quantity).toFixed(2)
-                        : 0
+                      formatNumberWithCommas(
+                        isNaN(item.quantity) || isNaN(item.price)
+                          ? Math.floor(0).toFixed(2)
+                          : (item.price * Math.floor(item.quantity)).toFixed(2)
+                      )
                     }}
                   </template>
                   <template v-slot:item.actions="{ item }">
@@ -297,55 +305,22 @@
                       mdi-delete
                     </v-icon>
                   </template>
-                  <template v-slot:footer>
-                    <v-divider />
-                    <div class="d-flex flex-column pr-4">
-                      <p class="mt-3 mb-0 text-right">
-                        จำนวนวัสดุทั้งหมด
-                        <span class="font-weight-bold">
-                          {{
-                            SaveData.office.list[0].items.reduce(
-                              (sum, item) =>
-                                sum + (parseInt(item.quantity) || 0),
-                              0
-                            )
-                          }}
-                        </span>
-                        รายการ
-                      </p>
-                      <p class="mt-2 mb-0 text-right">
-                        ราคารวมทั้งหมด
-                        <span class="font-weight-bold">
-                          {{
-                            SaveData.office.list[0].items
-                              .reduce(
-                                (sum, item) =>
-                                  sum + (item.price * item.quantity || 0),
-                                0
-                              )
-                              .toFixed(2)
-                          }}
-                        </span>
-                        บาท
-                      </p>
-                      <p class="mt-2 text-right">
-                        ราคารวมทั้งหมด
-                        <span class="font-weight-bold">
-                          {{
-                            BahtText(
-                              SaveData.office.list[0].items
-                                .reduce(
-                                  (sum, item) =>
-                                    sum + (item.price * item.quantity || 0),
-                                  0
-                                )
-                                .toFixed(2)
-                            )
-                          }}
-                        </span>
-                        บาทไทย
-                      </p>
-                    </div>
+                  <template slot="body.append">
+                    <tr v-if="SaveData.office.list[0].items.length > 0">
+                      <td></td>
+                      <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
+                      <td class="font-weight-bold text-center" colspan="3">
+                        {{ BahtText(sumField("price", "office")) }}
+                      </td>
+                      <td class="text-right">
+                        {{
+                          formatNumberWithCommas(
+                            sumField("price", "office").toFixed(2)
+                          )
+                        }}
+                      </td>
+                      <td></td>
+                    </tr>
                   </template>
                 </v-data-table>
               </fieldset>
@@ -538,7 +513,9 @@
                         large
                         persistent
                       >
-                        <div>{{ props.item.quantity }}</div>
+                        <div>
+                          {{ formatNumberWithCommas(props.item.quantity) }}
+                        </div>
                         <template v-slot:input>
                           <v-text-field
                             v-model="props.item.quantity"
@@ -556,7 +533,13 @@
                         large
                         persistent
                       >
-                        <div>{{ formatPrice(props.item.price) }}</div>
+                        <div>
+                          {{
+                            formatNumberWithCommas(
+                              formatPrice(props.item.price)
+                            )
+                          }}
+                        </div>
                         <template v-slot:input>
                           <v-text-field
                             v-model="props.item.price"
@@ -586,9 +569,13 @@
                     </template>
                     <template v-slot:item.total="{ item }">
                       {{
-                        (item.price * item.quantity).toFixed(2) !== "NaN"
-                          ? (item.price * item.quantity).toFixed(2)
-                          : 0
+                        formatNumberWithCommas(
+                          isNaN(item.quantity) || isNaN(item.price)
+                            ? Math.floor(0).toFixed(2)
+                            : (item.price * Math.floor(item.quantity)).toFixed(
+                                2
+                              )
+                        )
                       }}
                     </template>
                     <template v-slot:item.actions="{ item }">
@@ -596,55 +583,22 @@
                         mdi-delete
                       </v-icon>
                     </template>
-                    <template v-slot:footer>
-                      <v-divider />
-                      <div class="d-flex flex-column pr-4">
-                        <p class="mt-3 mb-0 text-right">
-                          จำนวนวัสดุทั้งหมด
-                          <span class="font-weight-bold">
-                            {{
-                              data.items.reduce(
-                                (sum, item) =>
-                                  sum + (parseInt(item.quantity) || 0),
-                                0
-                              )
-                            }}
-                          </span>
-                          รายการ
-                        </p>
-                        <p class="mt-2 mb-0 text-right">
-                          ราคารวมทั้งหมด
-                          <span class="font-weight-bold">
-                            {{
-                              data.items
-                                .reduce(
-                                  (sum, item) =>
-                                    sum + (item.price * item.quantity || 0),
-                                  0
-                                )
-                                .toFixed(2)
-                            }}
-                          </span>
-                          บาท
-                        </p>
-                        <p class="mt-2 text-right">
-                          ราคารวมทั้งหมด
-                          <span class="font-weight-bold">
-                            {{
-                              BahtText(
-                                data.items
-                                  .reduce(
-                                    (sum, item) =>
-                                      sum + (item.price * item.quantity || 0),
-                                    0
-                                  )
-                                  .toFixed(2)
-                              )
-                            }}
-                          </span>
-                          บาทไทย
-                        </p>
-                      </div>
+                    <template slot="body.append">
+                      <tr v-if="data.items.length > 0">
+                        <td></td>
+                        <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
+                        <td class="font-weight-bold text-center" colspan="3">
+                          {{ BahtText(sumField("price", "single", index)) }}
+                        </td>
+                        <td class="text-right">
+                          {{
+                            formatNumberWithCommas(
+                              sumField("price", "single", index).toFixed(2)
+                            )
+                          }}
+                        </td>
+                        <td></td>
+                      </tr>
                     </template>
                   </v-data-table>
                 </fieldset>
@@ -701,7 +655,222 @@
           <v-col cols="12"> รวมอาจารย์ </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item value="summary"> </v-tab-item>
+      <v-tab-item value="summary">
+        <v-row>
+          <v-col :sm="12" class="pb-16 mb-16 pt-8">
+            <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
+              <fieldset class="mt-3 mb-5 pa-4 rounded-lg elevation-2">
+                <legend class="ml-1 px-2">
+                  รายละเอียด
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        color="black"
+                        dense
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                        class="ml-1"
+                      >
+                        mdi-information-outline
+                      </v-icon>
+                    </template>
+                    <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+                  </v-tooltip>
+                </legend>
+
+                <v-data-table
+                  :hide-default-header="summaryData.length > 0 ? false : true"
+                  hide-default-footer
+                  :headers="summaryHeader"
+                  :items-per-page="9999"
+                  :items="summaryData"
+                >
+                  <template v-slot:no-data> ไม่พบรายการใด ๆ </template>
+                  <template v-slot:item.index="props">
+                    {{ props.index + 1 }}
+                  </template>
+                  <template v-slot:item.total="props">
+                    <div :key="props.item.total">
+                      <span
+                        :class="`${
+                          (
+                            parseFloat(props.item.opBudget) +
+                            parseFloat(props.item.subBudget)
+                          ).toFixed(2) > parseFloat(props.item.total).toFixed(2)
+                            ? 'red--text'
+                            : ''
+                        }`"
+                      >
+                        {{
+                          formatNumberWithCommas(formatPrice(props.item.total))
+                        }}
+                      </span>
+                      <i
+                        v-if="
+                          (
+                            parseFloat(props.item.opBudget) +
+                            parseFloat(props.item.subBudget)
+                          ).toFixed(2) > parseFloat(props.item.total).toFixed(2)
+                        "
+                      >
+                        <br />
+                        (+{{
+                          (
+                            parseFloat(props.item.opBudget) +
+                            parseFloat(props.item.subBudget) -
+                            parseFloat(props.item.total)
+                          ).toFixed(2)
+                        }})
+                      </i>
+                    </div>
+                  </template>
+
+                  <template v-slot:item.opBudget="props">
+                    <v-edit-dialog
+                      :return-value.sync="props.item.opBudget"
+                      large
+                      persistent
+                    >
+                      {{
+                        formatNumberWithCommas(formatPrice(props.item.opBudget))
+                      }}
+                      <template v-slot:input>
+                        <v-text-field
+                          v-model="props.item.opBudget"
+                          :rules="[required, isFloat]"
+                          single-line
+                          autofocus
+                        ></v-text-field>
+                      </template>
+                    </v-edit-dialog>
+                  </template>
+                  <template v-slot:item.subBudget="props">
+                    <v-edit-dialog
+                      :return-value.sync="props.item.subBudget"
+                      large
+                      persistent
+                    >
+                      {{
+                        formatNumberWithCommas(
+                          formatPrice(props.item.subBudget)
+                        )
+                      }}
+                      <template v-slot:input>
+                        <v-text-field
+                          v-model="props.item.subBudget"
+                          :rules="[required, isFloat]"
+                          single-line
+                          autofocus
+                        ></v-text-field>
+                      </template>
+                    </v-edit-dialog>
+                  </template>
+                  <template v-slot:header.productivity="{ header }">
+                    {{ header.text }} (
+                    {{
+                      SaveData &&
+                      SaveData.productivity &&
+                      SaveData.productivity.percentage
+                        ? SaveData.productivity.percentage
+                        : 0
+                    }}%)
+                  </template>
+                  <template v-slot:item.productivity="props">
+                    {{
+                      props.item.subject != "วัสดุสำนักงานสาขาเทคโนโลยีสารสนเทศ"
+                        ? formatNumberWithCommas(
+                            (
+                              props.item.total *
+                              (props.item.productivity / 100)
+                            ).toFixed(2)
+                          )
+                        : "-"
+                    }}
+                  </template>
+                  <template slot="body.append">
+                    <tr v-if="summaryData.length > 0">
+                      <td></td>
+                      <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
+                      <td class="font-weight-bold text-center">
+                        {{ BahtText(sumField("total", "summary")) }}
+                      </td>
+                      <td class="text-right">
+                        {{ sumField("total", "summary").toFixed(2) }}
+                      </td>
+                      <td class="text-right">
+                        {{ sumField("opBudget", "summary").toFixed(2) }}
+                      </td>
+                      <td class="text-right">
+                        {{ sumField("subBudget", "summary").toFixed(2) }}
+                      </td>
+                      <td class="text-right">
+                        {{
+                          sumField(
+                            "productivity",
+                            "summary",
+                            "isProductivity"
+                          ).toFixed(2)
+                        }}
+                      </td>
+                    </tr>
+                    <tr
+                      v-if="
+                        SaveData?.productivity?.percentage !== undefined &&
+                        summaryData.length > 0
+                      "
+                    >
+                      <td colspan="5"></td>
+                      <td class="text-right pt-4" colspan="2">
+                        <v-text-field
+                          v-model="SaveData.productivity.percentage"
+                          label="กำหนดเปอร์เซ็น"
+                          :rules="[required, isNumeric]"
+                          outlined
+                          counter
+                          maxlength="3"
+                          dense
+                        ></v-text-field>
+                      </td>
+                    </tr>
+                  </template>
+                </v-data-table>
+              </fieldset>
+              <div class="d-flex justify-end">
+                <v-menu offset-y transition="slide-y-transition">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      depressed
+                    >
+                      <v-icon left> mdi-printer </v-icon>
+                      พิมพ์รายการ
+                    </v-btn>
+                  </template>
+                  <v-list class="py-0">
+                    <v-list-item>
+                      <v-list-item-title class="px-0">
+                        <v-btn text block @click="exportPDF(-1, 'summary')">
+                          PDF
+                        </v-btn>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-divider />
+                    <v-list-item>
+                      <v-list-item-title>
+                        <v-btn text block> Excel </v-btn>
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </div>
+            </v-card></v-col
+          >
+        </v-row>
+      </v-tab-item>
     </v-tabs-items>
     <v-snackbar
       v-model="snackbar.status"
@@ -722,7 +891,7 @@
 </template>
 
 <script>
-import { standardPDF, multiTeacher } from "@/services/pdfExport";
+import { standardPDF, multiTeacher, summaryPDF } from "@/services/pdfExport";
 import THBText from "thai-baht-text";
 
 export default {
@@ -737,7 +906,7 @@ export default {
       SaveData: [],
       isDataLoaded: false,
       itemsHeader: [
-        { text: "#", value: "index", sortable: false },
+        { text: "ที่", value: "index", sortable: false },
         { text: "ชื่อวัสดุ", value: "name", sortable: false },
         { text: "จำนวน", value: "quantity", align: "right", sortable: false },
         { text: "ราคา (บาท)", value: "price", align: "right", sortable: false },
@@ -753,6 +922,30 @@ export default {
           value: "actions",
           sortable: false,
           align: "center",
+        },
+      ],
+      summaryHeader: [
+        { text: "ที่", value: "index", sortable: false },
+        { text: "ชื่อ สกุล ", value: "name", sortable: false },
+        { text: "รายวิชา", value: "subject", sortable: false },
+        { text: "จำนวนเงิน", value: "total", align: "right", sortable: false },
+        {
+          text: "งบดำเนินงาน",
+          value: "opBudget",
+          align: "right",
+          sortable: false,
+        },
+        {
+          text: "งบอุดหนุน",
+          value: "subBudget",
+          align: "right",
+          sortable: false,
+        },
+        {
+          text: "ผลผลิต จัดทำ สผ.2",
+          value: "productivity",
+          align: "right",
+          sortable: false,
         },
       ],
       snackbar: {
@@ -774,10 +967,96 @@ export default {
     window.addEventListener("beforeunload", this.confirmBeforeUnload);
     this.uploadJsonOverlay = true;
   },
-  computed: {},
+  computed: {
+    summaryData() {
+      if (this.SaveData && this.SaveData.data && this.SaveData.data.list) {
+        let summaryData = [];
+
+        this.SaveData.data.list.forEach((teacher) => {
+          const total = teacher.items.reduce(
+            (sum, item) => sum + (item.price * Math.floor(item.quantity) || 0),
+            0
+          );
+
+          let summaryObject = {
+            name: teacher.teacher_name,
+            subject: teacher.subject,
+            total: total.toFixed(2),
+            opBudget: total.toFixed(2),
+            subBudget: 0,
+            productivity: this.SaveData.productivity.percentage,
+          };
+
+          summaryData.push(summaryObject);
+        });
+
+        if (this.SaveData.office.list[0].items.length > 0) {
+          const officeSum = this.SaveData.office.list[0].items.reduce(
+            (sum, item) => sum + (item.price * Math.floor(item.quantity) || 0),
+            0
+          );
+
+          let officeSummaryObject = {
+            name: "นางสาวขวัญดารินทร์ จิตหาญ",
+            subject: "วัสดุสำนักงานสาขาเทคโนโลยีสารสนเทศ",
+            total: officeSum.toFixed(2),
+            opBudget: officeSum.toFixed(2),
+            subBudget: 0,
+            productivity: this.SaveData.productivity.percentage,
+          };
+
+          summaryData.push(officeSummaryObject);
+        }
+
+        return summaryData;
+      }
+
+      return [];
+    },
+  },
   methods: {
+    sumField(key, type, teacherIndex) {
+      switch (type) {
+        case "summary":
+          if (teacherIndex != "isProductivity") {
+            return this.summaryData.reduce(
+              (a, b) => a + (parseFloat(b[key]) || 0),
+              0
+            );
+          } else {
+            return this.summaryData.reduce(
+              (a, b) =>
+                a +
+                (b.subject !== "วัสดุสำนักงานสาขาเทคโนโลยีสารสนเทศ"
+                  ? parseFloat(b.total * (b.productivity / 100)) || 0
+                  : 0),
+              0
+            );
+          }
+
+        case "office":
+          return this.SaveData.office.list[0].items.reduce(
+            (sum, item) =>
+              sum + parseFloat(item[key] || 0) * Math.floor(item.quantity || 0),
+            0
+          );
+        case "single":
+          return this.SaveData.data.list[teacherIndex].items.reduce(
+            (sum, item) =>
+              sum + parseFloat(item[key] || 0) * Math.floor(item.quantity || 0),
+            0
+          );
+      }
+    },
+
     BahtText(number) {
+      if (number === Math.floor(0).toFixed(2)) {
+        return "ศูนย์บาทถ้วน";
+      }
       return THBText(number);
+    },
+    formatNumberWithCommas(number) {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
     exportSaveData() {
       if (this.SaveData.metadata.save_key === "") {
@@ -790,7 +1069,6 @@ export default {
             Math.floor(Math.random() * characters.length)
           );
         }
-        console.log("key:", key);
         this.SaveData.metadata.save_key = key;
       }
 
@@ -937,7 +1215,7 @@ export default {
         this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
         this.snackbar.color = "success darken-1";
         this.snackbar.icon = "mdi-check";
-        this.tab = "office";
+        this.tab = "summary";
       } else if (type === "new") {
         const emptyJsonPath = "/empty.json";
 
@@ -968,14 +1246,14 @@ export default {
         case "office":
           standardPDF(this.SaveData.office.list[0], "office");
           break;
+        case "summary":
+          summaryPDF(this.summaryData);
+          break;
         default:
-          console.log("unknown type");
+          console.error("unknown type: ", type);
           break;
       }
     },
-    // exportMultipleTeacherPDF() {
-    //   multiTeacher();
-    // },
     confirmBeforeUnload(event) {
       if (this.uploadJsonOverlay != true) {
         const confirmationMessage =
