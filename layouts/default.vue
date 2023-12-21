@@ -5,7 +5,7 @@
         <v-toolbar-title>ระบบจัดซื้อจัดจ้าง</v-toolbar-title>
         <v-spacer></v-spacer>
       </v-app-bar> -->
-      <v-container class="elevation-12 px-8" style="min-height: 100vh;">
+      <v-container class="elevation-2 px-8" style="min-height: 100vh;">
         <Nuxt />
       </v-container>
     </v-main>
