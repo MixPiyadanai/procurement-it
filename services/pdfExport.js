@@ -290,3 +290,286 @@ export function multiTeacher() {
 
   pdfMake.createPdf(docDefinition).open();
 }
+
+export function summaryPDF(data) {
+  const tableBody = [];
+
+  data.forEach((item, index) => {
+    tableBody.push([
+      { text: index + 1, style: "alignCenter" },
+      { text: item.name === "" ? "-" : item.name },
+      { text: item.subject === "" ? "-" : item.subject },
+      {
+        text: formatNumberWithCommas(
+          isNaN(item.total) || item.total === ""
+            ? 0.0
+            : Number(item.total).toFixed(2)
+        ),
+        style: "alignCenter",
+      },
+      {
+        text: formatNumberWithCommas(
+          isNaN(item.opBudget) || item.opBudget === ""
+            ? 0.0
+            : Number(item.opBudget).toFixed(2)
+        ),
+        style: "alignCenter",
+      },
+      {
+        text: formatNumberWithCommas(
+          isNaN(item.subBudget) || item.subBudget === ""
+            ? 0.0
+            : Number(item.subBudget).toFixed(2)
+        ),
+        style: "alignCenter",
+      },
+      {
+        text: formatNumberWithCommas(
+          isNaN(item.total * (item.productivity / 100)) ||
+            item.total * (item.productivity / 100) === ""
+            ? 0.0
+            : item.subject != "วัสดุสำนักงานสาขาเทคโนโลยีสารสนเทศ"
+            ? Number(item.total * (item.productivity / 100)).toFixed(2)
+            : "-"
+        ),
+        style: "alignCenter",
+      },
+    ]);
+  });
+
+  const productivityPercentage =
+    data.length > 0 && data[0].hasOwnProperty("productivity")
+      ? data[0].productivity
+      : 0;
+
+  const totalSum = data.reduce(
+    (sum, item) => sum + parseFloat(item.total) || 0,
+    0
+  );
+
+  const opSum = data.reduce(
+    (sum, item) => sum + parseFloat(item.opBudget) || 0,
+    0
+  );
+
+  const subSum = data.reduce(
+    (sum, item) => sum + parseFloat(item.subBudget) || 0,
+    0
+  );
+
+  const productivitySum = data.reduce((sum, item) => {
+    if (item.subject !== "วัสดุสำนักงานสาขาเทคโนโลยีสารสนเทศ") {
+      return (
+        sum +
+        (parseFloat(item.total) * (parseFloat(item.productivity) / 100) || 0)
+      );
+    }
+    return sum;
+  }, 0);
+
+  let thaiTotalSum = THBText(totalSum);
+  if (thaiTotalSum === "") {
+    thaiTotalSum = "ศูนย์บาทถ้วน";
+  }
+
+  function formatNumberWithCommas(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  const docDefinition = {
+    pageOrientation: "landscape",
+    pageSize: "A4",
+    // pageMargin: [0, 0],
+    content: [
+      {
+        layout: {},
+        table: {
+          headerRows: 6,
+          widths: [20, 140, 240, 75, 75, 75, "*"],
+          body: [
+            [
+              {
+                text: "รายละเอียด สผ.1 ประจำภาคเรียนที่ 1 ปีการศึกษา 2566",
+                style: "header",
+                colSpan: 7,
+                border: [false, false, false, false],
+              },
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+            ],
+            [
+              {
+                text: "สาขาเทคโนโลยีสารสนเทศ วิทยาลัยเทคนิคเชียงใหม่",
+                style: "header",
+                colSpan: 7,
+                border: [false, false, false, false],
+              },
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+            ],
+            [
+              {
+                text: "",
+                style: "header",
+                colSpan: 7,
+                border: [false, false, false, false],
+                margin: [0, 12, 0, 0],
+              },
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+            ],
+            [
+              {
+                text: "",
+                colSpan: 7,
+                border: [false, false, false, false],
+              },
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+            ],
+            [
+              {
+                text: "ที่",
+                style: "header",
+                rowSpan: 2,
+                margin: [0, 12, 0, 0],
+              },
+              {
+                text: "ชื่อ สกุล ",
+                style: "header",
+                rowSpan: 2,
+                margin: [0, 12, 0, 0],
+              },
+              {
+                text: "รายวิชา",
+                style: "header",
+                rowSpan: 2,
+                margin: [0, 12, 0, 0],
+              },
+              {
+                text: "จำนวนเงิน",
+                style: "header",
+                rowSpan: 2,
+                margin: [0, 12, 0, 0],
+              },
+              {
+                text: "งบประมาณ",
+                style: "header",
+                colSpan: 2,
+              },
+              {},
+              {
+                text: `ผลผลิต ${productivityPercentage}%`,
+                style: "header",
+              },
+            ],
+            [
+              {
+                text: "",
+              },
+              {
+                text: "",
+              },
+              {
+                text: "",
+              },
+              {
+                text: "",
+              },
+              {
+                text: "งบดำเนินงาน",
+                style: "header",
+              },
+              {
+                text: "งบอุดหนุน",
+                style: "header",
+              },
+              {
+                text: "จัดทำ สผ.2",
+                style: "header",
+              },
+            ],
+            ...tableBody,
+            [
+              {
+                text: "รวมเป็นเงินทั้งสิ้น",
+                style: "header",
+                colSpan: 2,
+              },
+              "",
+              {
+                text: thaiTotalSum,
+                style: "header",
+              },
+              {
+                text: formatNumberWithCommas(totalSum.toFixed(2)),
+                style: "header",
+              },
+              {
+                text: formatNumberWithCommas(opSum.toFixed(2)),
+                style: "header",
+              },
+              {
+                text: formatNumberWithCommas(subSum.toFixed(2)),
+                style: "header",
+              },
+              {
+                text: formatNumberWithCommas(productivitySum.toFixed(2)),
+                style: "header",
+              },
+            ],
+          ],
+        },
+      },
+    ],
+    defaultStyle: {
+      font: "Sarabun",
+      fontSize: 16,
+      lineHeight: 1.1,
+    },
+    styles: {
+      header: {
+        fontSize: 16,
+        bold: true,
+        alignment: "center",
+      },
+      subjectHeader: {
+        fontSize: 16,
+        bold: true,
+        alignment: "left",
+      },
+      pageNumberHeader: {
+        fontSize: 16,
+        bold: true,
+        alignment: "right",
+      },
+      alignCenter: {
+        alignment: "center",
+      },
+      alignCenterTotal: {
+        alignment: "center",
+        fontSize: 16,
+      },
+    },
+  };
+
+  const filename = `รายละเอียดวัสดุที่จะซื้อหรือจ้าง_${data.subject}.pdf`;
+
+  pdfMake.createPdf(docDefinition).open();
+}
