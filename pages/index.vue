@@ -652,7 +652,93 @@
       </v-tab-item>
       <v-tab-item value="multiTeacher">
         <v-row>
-          <v-col cols="12"> รวมอาจารย์ </v-col>
+          <v-col :sm="12" class="pb-16 mb-16 pt-8">
+            <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
+              <fieldset class="mt-3 mb-5 pa-4 rounded-lg elevation-2">
+                <legend class="ml-1 px-2">
+                  รวมอาจารย์
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon
+                        color="black"
+                        dense
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                        class="ml-1"
+                      >
+                        mdi-information-outline
+                      </v-icon>
+                    </template>
+                    <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+                  </v-tooltip>
+                </legend>
+                <v-data-table
+                  :hide-default-header="
+                    multiTeacherData.length > 0 ? false : true
+                  "
+                  hide-default-footer
+                  :headers="itemsHeader"
+                  :items-per-page="9999"
+                  :items="multiTeacherData.items"
+                >
+                  <template v-slot:header.actions="{ header }"> </template>
+                  <template v-slot:no-data> ยังไม่ได้เพิ่มพัสดุ </template>
+                  <template v-slot:item.index="props">
+                    {{
+                      SaveData.office.list[0].items.length + (props.index + 1)
+                    }}
+                  </template>
+                  <template v-slot:item.quantity="props">
+                    {{ formatNumberWithCommas(props.item.quantity) }}
+                  </template>
+                  <template v-slot:item.price="props">
+                    {{ formatNumberWithCommas(formatPrice(props.item.price)) }}
+                  </template>
+                  <template v-slot:item.total="{ item }">
+                    {{
+                      formatNumberWithCommas(
+                        isNaN(item.quantity) || isNaN(item.price)
+                          ? Math.floor(0).toFixed(2)
+                          : (item.price * Math.floor(item.quantity)).toFixed(2)
+                      )
+                    }}
+                  </template>
+                </v-data-table>
+              </fieldset>
+              <div class="d-flex justify-end">
+                <v-menu offset-y transition="slide-y-transition">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      depressed
+                    >
+                      <v-icon left> mdi-printer </v-icon>
+                      พิมพ์รายการ
+                    </v-btn>
+                  </template>
+                  <v-list class="py-0">
+                    <v-list-item>
+                      <v-list-item-title class="px-0">
+                        <v-btn text block @click="exportPDF(-1, 'multi')">
+                          PDF
+                        </v-btn>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-divider />
+                    <v-list-item>
+                      <v-list-item-title>
+                        <v-btn text block> Excel </v-btn>
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </div>
+            </v-card></v-col
+          >
         </v-row>
       </v-tab-item>
       <v-tab-item value="summary">
@@ -1013,6 +1099,24 @@ export default {
 
       return [];
     },
+    multiTeacherData() {
+      if (this.SaveData && this.SaveData.data && this.SaveData.data.list) {
+        const itemsList = [];
+
+        if (this.SaveData.data.list && Array.isArray(this.SaveData.data.list)) {
+          this.SaveData.data.list.forEach((entry) => {
+            const { items } = entry;
+
+            if (items && Array.isArray(items)) {
+              itemsList.push(...items);
+            }
+          });
+        }
+
+        return { items: itemsList };
+      }
+      return { items: [] };
+    },
   },
   methods: {
     sumField(key, type, teacherIndex) {
@@ -1215,7 +1319,7 @@ export default {
         this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
         this.snackbar.color = "success darken-1";
         this.snackbar.icon = "mdi-check";
-        this.tab = "summary";
+        // this.tab = "multiTeacher";
       } else if (type === "new") {
         const emptyJsonPath = "/empty.json";
 
@@ -1238,13 +1342,17 @@ export default {
     exportPDF(index, type) {
       switch (type) {
         case "single":
-          standardPDF(this.SaveData.data.list[index], "single");
+          standardPDF(this.SaveData.data.list[index], "single", 0);
           break;
         case "multi":
-          standardPDF(this.SaveData.data.list[index], "multi");
+          standardPDF(
+            this.multiTeacherData,
+            "single",
+            this.SaveData.office.list[0].items.length
+          );
           break;
         case "office":
-          standardPDF(this.SaveData.office.list[0], "office");
+          standardPDF(this.SaveData.office.list[0], "office", 0);
           break;
         case "summary":
           summaryPDF(this.summaryData);
