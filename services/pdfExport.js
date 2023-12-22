@@ -12,12 +12,12 @@ pdfMake.fonts = {
   },
 };
 
-export function standardPDF(data, type) {
+export function standardPDF(data, type, startIndex) {
   const tableBody = [];
 
   data.items.forEach((item, index) => {
     tableBody.push([
-      { text: index + 1, style: "alignCenter" },
+      { text: startIndex + (index + 1), style: "alignCenter" },
       { text: item.name === "" ? "-" : item.name },
       {
         text: formatNumberWithCommas(
@@ -66,6 +66,7 @@ export function standardPDF(data, type) {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
+  // let currentPageValue = "";
   const docDefinition = {
     pageOrientation: "portrait",
     pageSize: "A4",
@@ -112,9 +113,9 @@ export function standardPDF(data, type) {
             [
               {
                 text:
-                  type == "single"
+                  type === "single" && data.subject
                     ? "วัสดุฝึก รายวิชา " + data.subject
-                    : type == "office"
+                    : type === "office"
                     ? "วัสดุฝึกสำนักงาน"
                     : "วัสดุฝึก",
                 style: "subjectHeader",
@@ -129,7 +130,7 @@ export function standardPDF(data, type) {
               "",
               "",
               {
-                text: "แผ่นที่ 1",
+                text: `แผ่นที่ ${startIndex == 0 ? "1" : "2"}`,
                 style: "pageNumberHeader",
                 border: [false, false, false, false],
               },
@@ -227,7 +228,7 @@ export function standardPDF(data, type) {
               "",
               {
                 text: `( ${
-                  type == "single"
+                  type == "single" && data.teacher_name
                     ? data.teacher_name
                     : "นางสาวขวัญดารินทร์ จิตหาญ"
                 } )`,
@@ -244,6 +245,16 @@ export function standardPDF(data, type) {
         },
       },
     ],
+    // footer: function (currentPage, pageCount, pageSize) {
+    //   currentPageValue = currentPage;
+
+    //   return {
+    //     text: currentPage.toString() + " of " + pageCount,
+    //     style: "pageNumberFooter",
+    //     alignment: "right",
+    //     margin: [0, 10, 20, 0],
+    //   };
+    // },
     defaultStyle: {
       font: "Sarabun",
       fontSize: 16,
@@ -276,17 +287,6 @@ export function standardPDF(data, type) {
   };
 
   const filename = `รายละเอียดวัสดุที่จะซื้อหรือจ้าง_${data.subject}.pdf`;
-
-  pdfMake.createPdf(docDefinition).open();
-}
-
-export function multiTeacher() {
-  const docDefinition = {
-    content: ["Multi"],
-    defaultStyle: {
-      font: "Sarabun",
-    },
-  };
 
   pdfMake.createPdf(docDefinition).open();
 }
