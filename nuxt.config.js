@@ -1,4 +1,5 @@
 import colors from "vuetify/es5/util/colors";
+require("dotenv").config();
 
 export default {
   server: {
@@ -6,8 +7,8 @@ export default {
   },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: "%s - procurement-it",
-    title: "procurement-it",
+    titleTemplate: "%s",
+    title: "ระบบการจัดซื้อจัดจ้าง",
     htmlAttrs: {
       lang: "en",
     },
@@ -35,8 +36,12 @@ export default {
     "@nuxtjs/vuetify",
   ],
 
+  moment: {
+    locales: ["th"],
+  },
+
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: ["@nuxtjs/axios", "@nuxtjs/moment"],
+  modules: ["@nuxtjs/axios", "@nuxtjs/moment", "@nuxtjs/firebase"],
 
   axios: {
     // proxy: true
@@ -74,4 +79,19 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
+
+  // firebase config
+  firebase: {
+    config: {
+      apiKey: `${process.env.FIREBASE_apiKey}`,
+      authDomain: `${process.env.FIREBASE_authDomain}`,
+      projectId: `${process.env.FIREBASE_projectId}`,
+      storageBucket: `${process.env.FIREBASE_storageBucket}`,
+      messagingSenderId: `${process.env.FIREBASE_messagingSenderId}`,
+      appId: `${process.env.FIREBASE_appId}`,
+    },
+    services: {
+      storage: true,
+    },
+  },
 };
