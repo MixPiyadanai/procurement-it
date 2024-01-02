@@ -51,8 +51,18 @@
     <v-tabs-items v-model="tab">
       <v-tab-item value="index">
         <v-row>
-          <v-col cols="12">
-            <v-dialog v-model="uploadJsonOverlay" persistent width="450">
+          <v-col cols="12" class="pt-8">
+            <div v-if="isDataLoaded && SaveData.metadata">
+              <v-text-field
+                v-model="SaveData.metadata.name"
+                label="ชื่อไฟล์บันทึก"
+                outlined
+                clearable
+                :rules="[required]"
+              ></v-text-field>
+            </div>
+
+            <v-dialog v-model="uploadJsonOverlay" persistent width="800">
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   color="primary"
@@ -71,14 +81,69 @@
                   <span>นำเข้าบันทึกข้อมูลรายการจัดซื้อจัดจ้าง</span>
                 </v-card-title>
                 <v-card-text>
-                  <v-file-input
-                    accept="application/json"
-                    label="เลือกไฟล์บันทึก JSON"
-                    prepend-icon="mdi-code-json"
-                    @change="handleFileUpload"
-                    clearable
-                    v-model="jsonFile"
-                  ></v-file-input>
+                  <v-row>
+                    <v-col cols="6" class="d-flex align-center">
+                      <v-file-input
+                        accept="application/json"
+                        label="เลือกไฟล์บันทึก JSON"
+                        prepend-icon="mdi-code-json"
+                        @change="handleFileUpload"
+                        clearable
+                        v-model="jsonFile"
+                        outlined
+                      ></v-file-input>
+                    </v-col>
+                    <v-col cols="6">
+                      <div class="d-flex align-center mb-2">
+                        <h3>โหลดบันทึกออนไลน์</h3>
+                        <v-icon
+                          dense
+                          class="ml-2"
+                          @click="readSaveDataFireBase()"
+                          >mdi-reload</v-icon
+                        >
+                      </div>
+                      <v-progress-linear
+                        v-if="loading"
+                        indeterminate
+                        color="primary"
+                        class="mb-0 mt-2"
+                      ></v-progress-linear>
+                      <v-card outlined>
+                        <v-virtual-scroll
+                          :items="saveList"
+                          :item-height="65"
+                          min-height="500"
+                          height="500"
+                        >
+                          <template v-slot:default="{ item, index }">
+                            <v-list-item
+                              two-line
+                              @click="
+                                handleUploadJsonSuccess('loadOnline', index)
+                              "
+                            >
+                              <v-list-item-content>
+                                <v-list-item-title>
+                                  {{
+                                    item.metadata.name || "ไม่ได้ตั้งชื่อบันทึก"
+                                  }}
+                                </v-list-item-title>
+                                <v-list-item-subtitle>
+                                  แก้ไขล่าสุด:
+                                  {{
+                                    readableDateFormat(
+                                      item.metadata.date_modified
+                                    ) || "ไม่พบเวลาบันทึก"
+                                  }}
+                                </v-list-item-subtitle>
+                              </v-list-item-content>
+                            </v-list-item>
+                          </template>
+                        </v-virtual-scroll>
+                      </v-card>
+                    </v-col>
+                  </v-row>
                 </v-card-text>
 
                 <v-divider></v-divider>
@@ -111,8 +176,8 @@
               class="mb-2"
               :disabled="!isDataLoaded"
             >
-              <v-icon left>mdi-export</v-icon>
-              <span class="font-weight-bold">ส่งออกไฟล์บันทึก</span>
+              <v-icon left>mdi-content-save</v-icon>
+              <span class="font-weight-bold">บันทึกไฟล์บันทึก</span>
             </v-btn>
             <v-dialog v-model="wipeFieldOverlay" persistent width="400">
               <template v-slot:activator="{ on, attrs }">
@@ -347,11 +412,6 @@
                       </v-list-item-title>
                     </v-list-item>
                     <v-divider />
-                    <v-list-item>
-                      <v-list-item-title>
-                        <v-btn text block> Excel </v-btn>
-                      </v-list-item-title>
-                    </v-list-item>
                   </v-list>
                 </v-menu>
               </div>
@@ -625,11 +685,6 @@
                         </v-list-item-title>
                       </v-list-item>
                       <v-divider />
-                      <v-list-item>
-                        <v-list-item-title>
-                          <v-btn text block> Excel </v-btn>
-                        </v-list-item-title>
-                      </v-list-item>
                     </v-list>
                   </v-menu>
                 </div>
@@ -704,6 +759,18 @@
                       )
                     }}
                   </template>
+                  <template slot="body.append">
+                    <tr v-if="multiTeacherData.items.length > 0">
+                      <td></td>
+                      <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
+                      <td class="font-weight-bold text-center" colspan="3">
+                        {{ BahtText(sumField("total", "multi").toFixed(2)) }}
+                      </td>
+                      <td class="text-right">
+                        {{ sumField("total", "multi").toFixed(2) }}
+                      </td>
+                    </tr>
+                  </template>
                 </v-data-table>
               </fieldset>
               <div class="d-flex justify-end">
@@ -729,16 +796,10 @@
                       </v-list-item-title>
                     </v-list-item>
                     <v-divider />
-                    <v-list-item>
-                      <v-list-item-title>
-                        <v-btn text block> Excel </v-btn>
-                      </v-list-item-title>
-                    </v-list-item>
                   </v-list>
                 </v-menu>
-              </div>
-            </v-card></v-col
-          >
+              </div> </v-card
+          ></v-col>
         </v-row>
       </v-tab-item>
       <v-tab-item value="summary">
@@ -945,16 +1006,10 @@
                       </v-list-item-title>
                     </v-list-item>
                     <v-divider />
-                    <v-list-item>
-                      <v-list-item-title>
-                        <v-btn text block> Excel </v-btn>
-                      </v-list-item-title>
-                    </v-list-item>
                   </v-list>
                 </v-menu>
-              </div>
-            </v-card></v-col
-          >
+              </div> </v-card
+          ></v-col>
         </v-row>
       </v-tab-item>
     </v-tabs-items>
@@ -979,6 +1034,8 @@
 <script>
 import { standardPDF, multiTeacher, summaryPDF } from "@/services/pdfExport";
 import THBText from "thai-baht-text";
+import moment from "moment";
+moment.locale("th");
 
 export default {
   name: "IndexPage",
@@ -986,9 +1043,11 @@ export default {
     return {
       uploadJsonOverlay: false,
       wipeFieldOverlay: false,
+      loading: false,
       jsonFile: null,
       fileContent: null,
       isJsonSuccessUpload: false,
+      saveList: [],
       SaveData: [],
       isDataLoaded: false,
       itemsHeader: [
@@ -1052,6 +1111,7 @@ export default {
   mounted() {
     window.addEventListener("beforeunload", this.confirmBeforeUnload);
     this.uploadJsonOverlay = true;
+    this.readSaveDataFireBase();
   },
   computed: {
     summaryData() {
@@ -1119,6 +1179,49 @@ export default {
     },
   },
   methods: {
+    readableDateFormat(time) {
+      const momentInstance = moment(time).locale("th");
+
+      return momentInstance.isValid()
+        ? momentInstance.format("MMMM Do YYYY, HH:mm:ss")
+        : "ไม่พบเวลาบันทึก";
+    },
+
+    readSaveDataFireBase() {
+      this.loading = true;
+      this.saveList = [];
+      const storage = this.$fire.storage;
+      const directoryRef = storage.ref().child("save_data/");
+
+      directoryRef
+        .listAll()
+        .then((result) => {
+          result.items.forEach((itemRef) => {
+            itemRef
+              .getDownloadURL()
+              .then((url) => {
+                fetch(url)
+                  .then((response) => response.json())
+                  .then((jsonData) => {
+                    this.saveList.push(jsonData);
+                  })
+                  .catch((error) => {
+                    console.error(
+                      "Error fetching JSON content for an item:",
+                      error
+                    );
+                  });
+              })
+              .catch((error) => {
+                console.error("Error getting download URL for an item:", error);
+              });
+          });
+          this.loading = false;
+        })
+        .catch((error) => {
+          console.error("Error listing items in the directory:", error);
+        });
+    },
     sumField(key, type, teacherIndex) {
       switch (type) {
         case "summary":
@@ -1150,6 +1253,13 @@ export default {
               sum + parseFloat(item[key] || 0) * Math.floor(item.quantity || 0),
             0
           );
+        case "multi":
+          return this.multiTeacherData.items.reduce(
+            (sum, item) =>
+              sum +
+              parseFloat(item.price || 0) * Math.floor(item.quantity || 0),
+            0
+          );
       }
     },
 
@@ -1176,21 +1286,35 @@ export default {
         this.SaveData.metadata.save_key = key;
       }
 
-      const dateString = new Date().toLocaleDateString("th-TH");
-      const fileName = `ไฟล์บันทึกรายละเอียดวัสดุที่จะซื้อหรือจ้าง_ประจำวันที่_${dateString}.json`;
+      const fileName = this.SaveData.metadata.save_key + ".json";
+
+      this.SaveData.metadata.date_modified = moment()
+        .utc()
+        .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+      if (this.SaveData.metadata.date_created === "") {
+        this.SaveData.metadata.date_created =
+          this.SaveData.metadata.date_modified;
+      }
 
       const jsonString = JSON.stringify(this.SaveData);
       const blob = new Blob([jsonString], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    },
 
+      const storage = this.$fire.storage;
+
+      const storageRef = storage.ref().child("save_data").child(fileName);
+
+      storageRef
+        .put(blob)
+        .then((snapshot) => {
+          this.snackbar.status = true;
+          this.snackbar.text = "บันทึกข้อมูลสำเร็จ";
+          this.snackbar.color = "success darken-1";
+          this.snackbar.icon = "mdi-check";
+        })
+        .catch((error) => {
+          console.error("Error uploading file to Firebase Storage:", error);
+        });
+    },
     wipeSaveData() {
       this.handleUploadJsonSuccess("new");
       this.wipeFieldOverlay = false;
@@ -1303,7 +1427,7 @@ export default {
         reader.readAsText(file);
       }
     },
-    handleUploadJsonSuccess(type) {
+    handleUploadJsonSuccess(type, index) {
       if (type === "load") {
         if (this.jsonContent.metadata.version !== "1") {
           this.snackbar.status = true;
@@ -1319,7 +1443,6 @@ export default {
         this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
         this.snackbar.color = "success darken-1";
         this.snackbar.icon = "mdi-check";
-        // this.tab = "multiTeacher";
       } else if (type === "new") {
         const emptyJsonPath = "/empty.json";
 
@@ -1336,6 +1459,14 @@ export default {
           .catch((error) => {
             console.error("Error loading empty.json", error);
           });
+      } else if (type === "loadOnline") {
+        this.SaveData = [];
+        this.SaveData = JSON.parse(JSON.stringify(this.saveList[index]));
+        this.uploadJsonOverlay = false;
+        this.snackbar.status = true;
+        this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
+        this.snackbar.color = "success darken-1";
+        this.snackbar.icon = "mdi-check";
       }
       this.isDataLoaded = true;
     },
