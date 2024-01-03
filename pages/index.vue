@@ -2,7 +2,7 @@
   <div>
     <v-tabs
       fixed-tabs
-      class="mb-4 rounded-lg navbar-sticky elevation-2"
+      :class="`mb-4 navbar-sticky elevation-2 ${isMobile ? '' : 'rounded-lg'}`"
       dark
       v-model="tab"
       background-color="indigo"
@@ -49,20 +49,47 @@
       </v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab">
-      <v-tab-item value="index">
+      <v-tab-item value="index" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
           <v-col cols="12" class="pt-8">
-            <div v-if="isDataLoaded && SaveData.metadata">
-              <v-text-field
-                v-model="SaveData.metadata.name"
-                label="ชื่อไฟล์บันทึก"
-                outlined
-                clearable
-                :rules="[required]"
-              ></v-text-field>
-            </div>
+            <v-card
+              v-if="isDataLoaded && SaveData.metadata"
+              outlined
+              class="mb-6 rounded-xl elevation-2"
+            >
+              <v-card-title> ข้อมูลไฟล์บันทึก </v-card-title>
+              <v-divider />
+              <v-card-text class="pb-0 px-8 d-flex align-center">
+                <v-text-field
+                  v-model="SaveData.metadata.name"
+                  label="ชื่อไฟล์บันทึก"
+                  outlined
+                  clearable
+                  :rules="[required]"
+                ></v-text-field>
+              </v-card-text>
+              <v-divider />
+              <v-card-actions class="d-flex justify-end px-8 py-4">
+                <v-btn color="primary darken-2" @click="exportSaveLocal">
+                  <v-icon left>mdi-export</v-icon>
+                  ส่งออกไฟล์บันทึก
+                </v-btn>
+                <v-btn
+                  color="primary lighten-2"
+                  @click="firebaseSaveData(true)"
+                >
+                  <v-icon left>mdi-content-copy</v-icon>
+                  คัดลอกไฟล์บันทึก
+                </v-btn>
+              </v-card-actions>
+            </v-card>
 
-            <v-dialog v-model="uploadJsonOverlay" persistent width="800">
+            <v-dialog
+              v-model="uploadJsonOverlay"
+              persistent
+              width="1000"
+              :fullscreen="isMobile"
+            >
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   color="primary"
@@ -80,9 +107,12 @@
                 <v-card-title>
                   <span>นำเข้าบันทึกข้อมูลรายการจัดซื้อจัดจ้าง</span>
                 </v-card-title>
-                <v-card-text>
+                <v-card-text :class="isMobile ? 'mt-2' : ''">
                   <v-row>
-                    <v-col cols="6" class="d-flex align-center">
+                    <v-col
+                      :cols="isMobile ? 12 : 6"
+                      class="d-flex align-center"
+                    >
                       <v-file-input
                         accept="application/json"
                         label="เลือกไฟล์บันทึก JSON"
@@ -93,7 +123,7 @@
                         outlined
                       ></v-file-input>
                     </v-col>
-                    <v-col cols="6">
+                    <v-col :cols="isMobile ? 12 : 6">
                       <div class="d-flex align-center mb-2">
                         <h3>โหลดบันทึกออนไลน์</h3>
                         <v-icon
@@ -112,9 +142,10 @@
                       <v-card outlined>
                         <v-virtual-scroll
                           :items="saveList"
-                          :item-height="65"
+                          :item-height="88"
                           min-height="500"
                           height="500"
+                          class="elevation-2"
                         >
                           <template v-slot:default="{ item, index }">
                             <v-list-item
@@ -129,16 +160,29 @@
                                     item.metadata.name || "ไม่ได้ตั้งชื่อบันทึก"
                                   }}
                                 </v-list-item-title>
-                                <v-list-item-subtitle>
+                                <v-list-item-subtitle style="line-height: 1.5">
                                   แก้ไขล่าสุด:
                                   {{
                                     readableDateFormat(
                                       item.metadata.date_modified
                                     ) || "ไม่พบเวลาบันทึก"
                                   }}
+                                  <br />
+                                  รหัสบันทึก:
+                                  {{
+                                    item.metadata.save_key &&
+                                    item.metadata.save_key.length > 5
+                                      ? `${item.metadata.save_key.substring(
+                                          0,
+                                          5
+                                        )}....`
+                                      : item.metadata.save_key ||
+                                        "ไม่พบรหัสบันทึก"
+                                  }}
                                 </v-list-item-subtitle>
                               </v-list-item-content>
                             </v-list-item>
+                            <v-divider />
                           </template>
                         </v-virtual-scroll>
                       </v-card>
@@ -148,14 +192,25 @@
 
                 <v-divider></v-divider>
 
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="accent" text @click="uploadJsonOverlay = false">
+                <v-card-actions
+                  :class="`d-flex ${
+                    isMobile ? 'flex-column-reverse' : 'justify-end'
+                  }`"
+                >
+                  <v-btn
+                    color="accent"
+                    text
+                    @click="uploadJsonOverlay = false"
+                    :block="isMobile"
+                    :class="isMobile ? 'mt-4' : ''"
+                  >
                     ยกเลิก
                   </v-btn>
                   <v-btn
                     color="primary"
                     @click="handleUploadJsonSuccess('new')"
+                    :block="isMobile"
+                    :class="isMobile ? 'mt-4' : ''"
                   >
                     เริ่มต้นใหม่
                   </v-btn>
@@ -163,6 +218,8 @@
                     color="success"
                     :disabled="!isJsonSuccessUpload"
                     @click="handleUploadJsonSuccess('load')"
+                    :block="isMobile"
+                    :class="isMobile ? 'mt-4' : ''"
                     >โหลดบันทึก</v-btn
                   >
                 </v-card-actions>
@@ -170,14 +227,14 @@
             </v-dialog>
             <v-btn
               block
-              color="primary lighten-2"
-              @click="exportSaveData"
+              color="success"
+              @click="firebaseSaveData(false)"
               large
               class="mb-2"
               :disabled="!isDataLoaded"
             >
               <v-icon left>mdi-content-save</v-icon>
-              <span class="font-weight-bold">บันทึกไฟล์บันทึก</span>
+              <span class="font-weight-bold">บันทึกไฟล์บันทึก </span>
             </v-btn>
             <v-dialog v-model="wipeFieldOverlay" persistent width="400">
               <template v-slot:activator="{ on, attrs }">
@@ -191,7 +248,7 @@
                   :disabled="!isDataLoaded"
                 >
                   <v-icon left>mdi-alert-outline</v-icon>
-                  <span class="font-weight-bold">ล้างข้อมูล</span>
+                  <span class="font-weight-bold">ล้างข้อมูล </span>
                 </v-btn>
               </template>
               <v-card light class="d-flex flex-column pt-8">
@@ -220,7 +277,7 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item value="officeItems">
+      <v-tab-item value="officeItems" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
           <v-col
             cols="12"
@@ -419,9 +476,9 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item value="singleTeacher">
+      <v-tab-item value="singleTeacher" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
-          <v-col :sm="3" :cols="12">
+          <v-col :sm="3" :cols="12" class="pt-8">
             <v-card outlined class="py-2 rounded-xl elevation-2">
               <v-card-title>รายชื่ออาจารย์</v-card-title>
               <v-divider class="mb-4" />
@@ -452,7 +509,7 @@
               </v-navigation-drawer>
             </v-card>
           </v-col>
-          <v-col :sm="9" class="pb-16 mb-16">
+          <v-col :sm="9" class="pb-16 mb-16 pt-8">
             <div v-if="SaveData.data && SaveData.data.list">
               <v-card
                 v-for="(data, index) in SaveData.data.list"
@@ -705,7 +762,7 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item value="multiTeacher">
+      <v-tab-item value="multiTeacher" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
           <v-col :sm="12" class="pb-16 mb-16 pt-8">
             <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
@@ -802,7 +859,7 @@
           ></v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item value="summary">
+      <v-tab-item value="summary" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
           <v-col :sm="12" class="pb-16 mb-16 pt-8">
             <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
@@ -1036,11 +1093,14 @@ import { standardPDF, multiTeacher, summaryPDF } from "@/services/pdfExport";
 import THBText from "thai-baht-text";
 import moment from "moment";
 moment.locale("th");
+import { debounce } from "~/utils/debounce";
 
 export default {
   name: "IndexPage",
   data() {
     return {
+      screenWidth: process.client ? window.innerWidth : 0,
+      isMobile: false,
       uploadJsonOverlay: false,
       wipeFieldOverlay: false,
       loading: false,
@@ -1108,10 +1168,16 @@ export default {
         "ต้องเป็นจำนวนเต็มหรือจำนวนทศนิยม (ไม่ควรเกินสองตำแหน่งทศนิยม)",
     };
   },
+  created() {
+    if (process.client) {
+      window.addEventListener("resize", this.resizeHandler);
+    }
+  },
   mounted() {
     window.addEventListener("beforeunload", this.confirmBeforeUnload);
     this.uploadJsonOverlay = true;
     this.readSaveDataFireBase();
+    this.resizeHandler();
   },
   computed: {
     summaryData() {
@@ -1178,7 +1244,15 @@ export default {
       return { items: [] };
     },
   },
+  watch: {
+    // isMobile(newWidth, oldWidth) {
+    //   console.log(newWidth);
+    // },
+  },
   methods: {
+    resizeHandler: debounce(function () {
+      this.isMobile = window.innerWidth < 600 ? true : false;
+    }, 100),
     readableDateFormat(time) {
       const momentInstance = moment(time).locale("th");
 
@@ -1272,7 +1346,16 @@ export default {
     formatNumberWithCommas(number) {
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
-    exportSaveData() {
+    firebaseSaveData(isCopy) {
+      if (isCopy) {
+        const confirmMessage = "คุณต้องการคัดลอกข้อมูลใช่หรือไม่?!";
+        if (confirm(confirmMessage)) {
+          this.SaveData.metadata.save_key = "";
+        } else {
+          return;
+        }
+      }
+
       if (this.SaveData.metadata.save_key === "") {
         const characters =
           "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -1314,6 +1397,22 @@ export default {
         .catch((error) => {
           console.error("Error uploading file to Firebase Storage:", error);
         });
+    },
+    exportSaveLocal() {
+      const jsonString = JSON.stringify(this.SaveData);
+      const blob = new Blob([jsonString], { type: "application/json" });
+
+      const downloadLink = document.createElement("a");
+      downloadLink.href = window.URL.createObjectURL(blob);
+
+      const fileName = `${this.SaveData.metadata.name || "ไฟล์บันทึก"}.json`;
+      downloadLink.download = fileName;
+
+      document.body.appendChild(downloadLink);
+
+      downloadLink.click();
+
+      document.body.removeChild(downloadLink);
     },
     wipeSaveData() {
       this.handleUploadJsonSuccess("new");
@@ -1445,11 +1544,13 @@ export default {
         this.snackbar.icon = "mdi-check";
       } else if (type === "new") {
         const emptyJsonPath = "/empty.json";
+        const reservedKeys = this.SaveData.metadata.save_key;
 
         fetch(emptyJsonPath)
           .then((response) => response.json())
           .then((emptyJsonContent) => {
             this.SaveData = JSON.parse(JSON.stringify(emptyJsonContent));
+            this.SaveData.metadata.save_key = reservedKeys;
             this.uploadJsonOverlay = false;
             this.snackbar.status = true;
             this.snackbar.text = "สร้างบันทึกใหม่สำเร็จ";
@@ -1504,6 +1605,9 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("beforeunload", this.confirmBeforeUnload);
+    if (process.client) {
+      window.removeEventListener("resize", this.resizeHandler);
+    }
   },
 };
 </script>
@@ -1537,5 +1641,11 @@ fieldset {
   position: sticky;
   top: 12px;
   z-index: 2;
+}
+
+@media only screen and (max-width: 600px) {
+  .navbar-sticky {
+    top: 0;
+  }
 }
 </style>
