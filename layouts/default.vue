@@ -6,7 +6,6 @@
         <v-spacer></v-spacer>
       </v-app-bar> -->
       <v-container
-
         :class="`elevation-2 ${isMobile ? 'pa-0' : 'px-8'}`"
         style="min-height: 100vh"
       >

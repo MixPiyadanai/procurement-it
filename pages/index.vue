@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- TEST PROTECTION -->
     <v-tabs
       fixed-tabs
       :class="`mb-4 navbar-sticky elevation-2 ${isMobile ? '' : 'rounded-lg'}`"
