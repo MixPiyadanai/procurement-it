@@ -6,10 +6,16 @@
         <v-spacer></v-spacer>
       </v-app-bar> -->
       <v-container
-        :fluid="isMobile"
+
         :class="`elevation-2 ${isMobile ? 'pa-0' : 'px-8'}`"
         style="min-height: 100vh"
       >
+        <div class="fixed-version">
+          <span>
+            <v-icon dense class="mt-n1" color="success">mdi-earth</v-icon>
+            {{ version }}
+          </span>
+        </div>
         <Nuxt />
       </v-container>
     </v-main>
@@ -32,6 +38,7 @@ export default {
     return {
       screenWidth: process.client ? window.innerWidth : 0,
       isMobile: false,
+      version: "Prod 1.0.0",
     };
   },
   methods: {
@@ -46,3 +53,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.fixed-version {
+  position: fixed;
+  padding-left: 10px;
+  padding-bottom: 10px;
+  bottom: 0;
+  left: 0;
+}
+</style>

@@ -68,15 +68,28 @@
                   :rules="[required]"
                 ></v-text-field>
               </v-card-text>
-              <v-divider />
-              <v-card-actions class="d-flex justify-end px-8 py-4">
-                <v-btn color="primary darken-2" @click="exportSaveLocal">
+              <v-divider v-if="!isMobile" />
+              <v-card-actions
+                :class="`d-flex ${
+                  isMobile
+                    ? 'flex-column-reverse px-8 pb-8'
+                    : ' justify-end px-8 py-4'
+                }`"
+              >
+                <v-btn
+                  color="primary darken-2"
+                  @click="exportSaveLocal"
+                  :block="isMobile"
+                  :class="isMobile ? 'mt-2' : ''"
+                >
                   <v-icon left>mdi-export</v-icon>
                   ส่งออกไฟล์บันทึก
                 </v-btn>
                 <v-btn
                   color="primary lighten-2"
                   @click="firebaseSaveData(true)"
+                  :block="isMobile"
+                  :class="isMobile ? 'ml-0' : 'ml-3'"
                 >
                   <v-icon left>mdi-content-copy</v-icon>
                   คัดลอกไฟล์บันทึก
@@ -130,6 +143,7 @@
                           dense
                           class="ml-2"
                           @click="readSaveDataFireBase()"
+                          color="primary darken-2"
                           >mdi-reload</v-icon
                         >
                       </div>
@@ -170,6 +184,8 @@
                                   <br />
                                   รหัสบันทึก:
                                   {{
+                                    item &&
+                                    item.metadata &&
                                     item.metadata.save_key &&
                                     item.metadata.save_key.length > 5
                                       ? `${item.metadata.save_key.substring(
@@ -179,6 +195,23 @@
                                       : item.metadata.save_key ||
                                         "ไม่พบรหัสบันทึก"
                                   }}
+                                  <span class="ml-4">
+                                    เวอร์ชั่นบันทึก:
+                                    <v-icon
+                                      small
+                                      :color="
+                                        item.metadata.version == '1.0.0'
+                                          ? 'success'
+                                          : 'error'
+                                      "
+                                      >{{
+                                        item.metadata.version == "1.0.0"
+                                          ? "mdi-check-circle"
+                                          : "mdi-close-circle"
+                                      }}</v-icon
+                                    >
+                                    {{ item.metadata.version }}
+                                  </span>
                                 </v-list-item-subtitle>
                               </v-list-item-content>
                             </v-list-item>
@@ -271,6 +304,122 @@
                   <v-btn @click="wipeSaveData" text color="error"
                     >ล้างข้อมูล</v-btn
                   >
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+            <div class="d-flex align-center mb-2 mt-8">
+              <h3>รายการบันทึกออนไลน์ (ทั้งหมด)</h3>
+              <v-icon
+                dense
+                class="ml-2"
+                @click="readSaveDataFireBase()"
+                color="primary darken-2"
+                >mdi-reload</v-icon
+              >
+            </div>
+            <v-data-table
+              :loading="loading"
+              :headers="[
+                {
+                  text: '#',
+                  value: 'index',
+                  sortable: false,
+                  align: 'center',
+                },
+                { text: 'ชื่อบันทึก', value: 'metadata.name', sortable: false },
+                {
+                  text: 'แก้ไขล่าสุด',
+                  value: 'metadata.date_modified',
+                  sortable: false,
+                },
+                {
+                  text: 'สร้างเมื่อ',
+                  value: 'metadata.date_created',
+                  sortable: false,
+                },
+                {
+                  text: 'รหัสบันทึก',
+                  value: 'metadata.save_key',
+                  sortable: false,
+                },
+                {
+                  text: 'เวอร์ชั่นบันทึก',
+                  value: 'metadata.version',
+                  sortable: false,
+                },
+                {
+                  text: '',
+                  value: 'action',
+                  sortable: false,
+                  align: 'end',
+                },
+              ]"
+              :items="saveList"
+              :items-per-page="5"
+              class="elevation-1 mb-16"
+              hide-default-footer
+            >
+              <template v-slot:no-data> ไม่พบรายการบันทึก </template>
+              <template v-slot:item.index="{ index }">
+                {{ index + 1 }}
+              </template>
+              <template v-slot:item.metadata.date_modified="{ item }">
+                {{ readableDateFormat(item.metadata.date_modified) }}
+              </template>
+              <template v-slot:item.metadata.date_created="{ item }">
+                {{ readableDateFormat(item.metadata.date_created) }}
+              </template>
+              <template v-slot:item.metadata.save_key="{ item }">
+                {{
+                  item.metadata.save_key && item.metadata.save_key.length > 5
+                    ? `${item.metadata.save_key.substring(0, 5)}....`
+                    : item.metadata.save_key || "ไม่พบรหัสบันทึก"
+                }}
+              </template>
+              <template v-slot:item.metadata.version="{ item }">
+                <v-icon
+                  dense
+                  :color="
+                    item.metadata.version == '1.0.0' ? 'success' : 'error'
+                  "
+                  >{{
+                    item.metadata.version == "1.0.0"
+                      ? "mdi-check-circle"
+                      : "mdi-close-circle"
+                  }}</v-icon
+                >
+                {{ item.metadata.version }}
+              </template>
+              <template v-slot:item.action="{ item }">
+                <v-icon
+                  color="primary"
+                  @click="(viewSaveDialog = true), (viewSaveData = item)"
+                >
+                  mdi-eye</v-icon
+                >
+                <v-icon
+                  color="error"
+                  @click="deleteSaveFromFireBase(item)"
+                  class="ml-3"
+                  >mdi-delete</v-icon
+                >
+              </template>
+            </v-data-table>
+            <v-dialog v-model="viewSaveDialog" max-width="1000" scrollable>
+              <v-card>
+                <v-card-title class="text-h5"> ตัวอย่างบันทึก </v-card-title>
+
+                <v-card-text>
+                  <pre>
+                    {{ JSON.stringify(viewSaveData, null, 2) }}
+                  </pre>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+
+                  <v-btn color="accent" @click="viewSaveDialog = false">
+                    ปิด
+                  </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -1159,6 +1308,8 @@ export default {
         color: "",
         icon: "",
       },
+      viewSaveDialog: false,
+      viewSaveData: {},
       tab: "index",
       isNumeric: (v) => /^\d+$/.test(v) || "ต้องเป็นจำนวนเต็ม",
       max8chars: (v) => v.length <= 8 || "ไม่ควรเกิน 8 ตัวอักษร",
@@ -1175,7 +1326,7 @@ export default {
   },
   mounted() {
     window.addEventListener("beforeunload", this.confirmBeforeUnload);
-    this.uploadJsonOverlay = true;
+    // this.uploadJsonOverlay = true;
     this.readSaveDataFireBase();
     this.resizeHandler();
   },
@@ -1257,7 +1408,7 @@ export default {
       const momentInstance = moment(time).locale("th");
 
       return momentInstance.isValid()
-        ? momentInstance.format("MMMM Do YYYY, HH:mm:ss")
+        ? momentInstance.format("DD MMMM YYYY, HH:mm:ss")
         : "ไม่พบเวลาบันทึก";
     },
 
@@ -1351,6 +1502,7 @@ export default {
         const confirmMessage = "คุณต้องการคัดลอกข้อมูลใช่หรือไม่?!";
         if (confirm(confirmMessage)) {
           this.SaveData.metadata.save_key = "";
+          this.SaveData.metadata.date_created = "";
         } else {
           return;
         }
@@ -1397,6 +1549,8 @@ export default {
         .catch((error) => {
           console.error("Error uploading file to Firebase Storage:", error);
         });
+
+      this.readSaveDataFireBase();
     },
     exportSaveLocal() {
       const jsonString = JSON.stringify(this.SaveData);
@@ -1528,7 +1682,7 @@ export default {
     },
     handleUploadJsonSuccess(type, index) {
       if (type === "load") {
-        if (this.jsonContent.metadata.version !== "1") {
+        if (this.jsonContent.metadata.version !== "1.0.0") {
           this.snackbar.status = true;
           this.snackbar.text = "เวอร์ชั่นของบันทึกไม่ตรงกัน!";
           this.snackbar.color = "error darken-1";
@@ -1544,7 +1698,9 @@ export default {
         this.snackbar.icon = "mdi-check";
       } else if (type === "new") {
         const emptyJsonPath = "/empty.json";
-        const reservedKeys = this.SaveData.metadata.save_key;
+        const reservedKeys = this.SaveData.metadata
+          ? this.SaveData.metadata.save_key
+          : "";
 
         fetch(emptyJsonPath)
           .then((response) => response.json())
@@ -1592,6 +1748,29 @@ export default {
         default:
           console.error("unknown type: ", type);
           break;
+      }
+    },
+    deleteSaveFromFireBase(save) {
+      const confirmMessage = `คุณต้องการลบบันทึก ${save.metadata.name} ใช่หรือไม่?!`;
+
+      if (confirm(confirmMessage)) {
+        const storage = this.$fire.storage;
+        const fileRef = storage
+          .ref()
+          .child(`save_data/${save.metadata.save_key}.json`);
+
+        fileRef
+          .delete()
+          .then(() => {
+            this.snackbar.status = true;
+            this.snackbar.text = "ลบบันทึกสำเร็จ";
+            this.snackbar.color = "success darken-1";
+            this.snackbar.icon = "mdi-check";
+            this.readSaveDataFireBase();
+          })
+          .catch((error) => {
+            console.error("Error deleting file:", error);
+          });
       }
     },
     confirmBeforeUnload(event) {
