@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- TEST PROTECTION -->
     <v-tabs
       fixed-tabs
       :class="`mb-4 navbar-sticky elevation-2 ${isMobile ? '' : 'rounded-lg'}`"
@@ -60,14 +59,30 @@
             >
               <v-card-title> ข้อมูลไฟล์บันทึก </v-card-title>
               <v-divider />
-              <v-card-text class="pb-0 px-8 d-flex align-center">
+              <v-card-text class="py-8 px-8 d-flex flex-column align-center">
                 <v-text-field
                   v-model="SaveData.metadata.name"
                   label="ชื่อไฟล์บันทึก"
                   outlined
                   clearable
+                  style="width: 100%"
                   :rules="[required]"
                 ></v-text-field>
+                <v-select
+                  :items="saveEditors.map((editor) => editor.name) || []"
+                  label="ชื่อผู้แก้ไข"
+                  outlined
+                  v-model="saveEditor"
+                  :rules="[required]"
+                  hide-details
+                  style="width: 100%"
+                >
+                  <template v-slot:no-data>
+                    <div class="pa-4">
+                      ไม่พบรายชือ (เพิ่มรายชื่อที่หน้าหลัก)
+                    </div>
+                  </template>
+                </v-select>
               </v-card-text>
               <v-divider v-if="!isMobile" />
               <v-card-actions
@@ -111,7 +126,7 @@
                   v-on="on"
                   block
                   large
-                  class="mb-2"
+                  :class="`${!isDataLoaded ? 'pulse-animation' : ''} mb-2`"
                 >
                   <v-icon left>mdi-import</v-icon>
                   <span class="font-weight-bold">นำเข้าไฟล์บันทึก</span>
@@ -123,19 +138,40 @@
                 </v-card-title>
                 <v-card-text :class="isMobile ? 'mt-2' : ''">
                   <v-row>
-                    <v-col
-                      :cols="isMobile ? 12 : 6"
-                      class="d-flex align-center"
-                    >
-                      <v-file-input
-                        accept="application/json"
-                        label="เลือกไฟล์บันทึก JSON"
-                        prepend-icon="mdi-code-json"
-                        @change="handleFileUpload"
-                        clearable
-                        v-model="jsonFile"
-                        outlined
-                      ></v-file-input>
+                    <v-col :cols="isMobile ? 12 : 6">
+                      <h3>โหลดบันทึก</h3>
+                      <v-card outlined class="pa-8 mt-2 mb-4 elevation-2">
+                        <v-file-input
+                          accept="application/json"
+                          label="เลือกไฟล์บันทึก JSON"
+                          prepend-icon="mdi-paperclip"
+                          @change="handleFileUpload"
+                          clearable
+                          v-model="jsonFile"
+                          outlined
+                          hide-details
+                        ></v-file-input>
+                      </v-card>
+                      <h3>แก้ไขบันทึกภายในชื่อของ...</h3>
+                      <v-card outlined class="pa-8 mt-2 elevation-2">
+                        <v-select
+                          :items="
+                            saveEditors.map((editor) => editor.name) || []
+                          "
+                          label="ชื่อผู้แก้ไข"
+                          outlined
+                          v-model="saveEditor"
+                          :rules="[required]"
+                          hide-details
+                          style="width: 100%"
+                        >
+                          <template v-slot:no-data>
+                            <div class="pa-4">
+                              ไม่พบรายชือ (เพิ่มรายชื่อที่หน้าหลัก)
+                            </div>
+                          </template>
+                        </v-select>
+                      </v-card>
                     </v-col>
                     <v-col :cols="isMobile ? 12 : 6">
                       <div class="d-flex align-center mb-2">
@@ -145,6 +181,7 @@
                           class="ml-2"
                           @click="readSaveDataFireBase()"
                           color="primary darken-2"
+                          :disabled="loading"
                           >mdi-reload</v-icon
                         >
                       </div>
@@ -154,13 +191,12 @@
                         color="primary"
                         class="mb-0 mt-2"
                       ></v-progress-linear>
-                      <v-card outlined>
+                      <v-card outlined class="elevation-2">
                         <v-virtual-scroll
                           :items="saveList"
                           :item-height="88"
                           min-height="500"
                           height="500"
-                          class="elevation-2"
                         >
                           <template v-slot:default="{ item, index }">
                             <v-list-item
@@ -168,6 +204,7 @@
                               @click="
                                 handleUploadJsonSuccess('loadOnline', index)
                               "
+                              :disabled="saveEditor == ''"
                             >
                               <v-list-item-content>
                                 <v-list-item-title>
@@ -250,7 +287,7 @@
                   </v-btn>
                   <v-btn
                     color="success"
-                    :disabled="!isJsonSuccessUpload"
+                    :disabled="!isJsonSuccessUpload || saveEditor == ''"
                     @click="handleUploadJsonSuccess('load')"
                     :block="isMobile"
                     :class="isMobile ? 'mt-4' : ''"
@@ -263,9 +300,9 @@
               block
               color="success"
               @click="firebaseSaveData(false)"
-              large
-              class="mb-2"
+              :class="`${isDataLoaded ? 'pulse-animation' : ''} mb-2`"
               :disabled="!isDataLoaded"
+              x-large
             >
               <v-icon left>mdi-content-save</v-icon>
               <span class="font-weight-bold">บันทึกไฟล์บันทึก </span>
@@ -277,7 +314,6 @@
                   v-bind="attrs"
                   v-on="on"
                   block
-                  large
                   class="mb-2"
                   :disabled="!isDataLoaded"
                 >
@@ -308,13 +344,15 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-            <div class="d-flex align-center mb-2 mt-8">
+            <v-divider class="my-8" />
+            <div class="d-flex align-center mb-2">
               <h3>รายการบันทึกออนไลน์ (ทั้งหมด)</h3>
               <v-icon
                 dense
                 class="ml-2"
                 @click="readSaveDataFireBase()"
                 color="primary darken-2"
+                :disabled="loading"
                 >mdi-reload</v-icon
               >
             </div>
@@ -326,6 +364,7 @@
                   value: 'index',
                   sortable: false,
                   align: 'center',
+                  width: '40',
                 },
                 { text: 'ชื่อบันทึก', value: 'metadata.name', sortable: false },
                 {
@@ -356,9 +395,10 @@
                 },
               ]"
               :items="saveList"
-              :items-per-page="5"
-              class="elevation-1 mb-16"
+              :items-per-page="9999"
+              class="elevation-1 mb-8"
               hide-default-footer
+              fixed-header
             >
               <template v-slot:no-data> ไม่พบรายการบันทึก </template>
               <template v-slot:item.index="{ index }">
@@ -401,6 +441,120 @@
                 <v-icon
                   color="error"
                   @click="deleteSaveFromFireBase(item)"
+                  class="ml-3"
+                  >mdi-delete</v-icon
+                >
+              </template>
+            </v-data-table>
+            <div class="d-flex align-center mb-2 mt-8">
+              <h3>รายชื่อผู้แก้ไข (ทั้งหมด)</h3>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon
+                    color="black"
+                    dense
+                    dark
+                    v-bind="attrs"
+                    v-on="on"
+                    class="ml-2"
+                  >
+                    mdi-information-outline
+                  </v-icon>
+                </template>
+                <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+              </v-tooltip>
+              <v-icon
+                dense
+                class="ml-2"
+                @click="readEditorsFirebase()"
+                color="primary darken-2"
+                :disabled="loading"
+                >mdi-reload</v-icon
+              >
+            </div>
+            <v-data-table
+              :loading="loading"
+              :headers="[
+                { text: '#', value: 'index', sortable: false, width: '40' },
+                { text: 'ชื่อผู้แก้ไข', value: 'name', sortable: false },
+                {
+                  text: '',
+                  value: 'action',
+                  sortable: false,
+                  align: 'end',
+                },
+              ]"
+              :items="saveEditors"
+              fixed-header
+              hide-default-footer
+              :items-per-page="9999"
+              class="elevation-1 mb-16"
+            >
+              <template v-slot:top>
+                <div class="pa-2 d-flex justify-end">
+                  <v-dialog v-model="addEditorDialog" max-width="500px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn color="success" dark v-bind="attrs" v-on="on">
+                        <v-icon> mdi-plus </v-icon>
+                        เพิ่มผู้แก้ไข
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title> เพิ่มผู้มีสิทธิ์แก้ไข </v-card-title>
+
+                      <v-card-text class="pb-0">
+                        <v-text-field
+                          outlined
+                          label="ชื่อผู้แก้ไข"
+                          :rules="[required]"
+                          v-model="addNewEditorName"
+                        ></v-text-field>
+                      </v-card-text>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn text @click="addEditorDialog = false">
+                          ยกเลิก
+                        </v-btn>
+                        <v-btn
+                          color="success"
+                          @click="updateEditorFirebase('add')"
+                        >
+                          เพิ่มรายชื่อ
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+              </template>
+              <template v-slot:no-data> ไม่พบรายชื่อผู้แก้ไข </template>
+              <template v-slot:item.index="{ index }">
+                {{ index + 1 }}
+              </template>
+              <template v-slot:item.name="props">
+                <v-edit-dialog
+                  :return-value.sync="props.item.name"
+                  large
+                  persistent
+                  @save="updateEditorFirebase('update')"
+                >
+                  <div class="py-2">{{ props.item.name }}</div>
+                  <template v-slot:input>
+                    <v-text-field
+                      v-model="props.item.name"
+                      :rules="[required]"
+                      single-line
+                      autofocus
+                    ></v-text-field>
+                  </template>
+                </v-edit-dialog>
+              </template>
+              <template v-slot:item.action="{ item }">
+                <v-icon
+                  color="error"
+                  @click="
+                    updateEditorFirebase('delete', saveEditors.indexOf(item))
+                  "
                   class="ml-3"
                   >mdi-delete</v-icon
                 >
@@ -458,7 +612,6 @@
                   <v-btn
                     color="success darken-1"
                     class="px-2"
-                    text
                     @click="addItems(-1, 'office')"
                   >
                     <v-icon> mdi-plus </v-icon>
@@ -730,7 +883,6 @@
                     <v-btn
                       color="success darken-1"
                       class="px-2"
-                      text
                       @click="addItems(index, 'single')"
                     >
                       <v-icon> mdi-plus </v-icon>
@@ -932,7 +1084,10 @@
                         mdi-information-outline
                       </v-icon>
                     </template>
-                    <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+                    <span
+                      >ลำดับของรายการ จะอิงตามจำนวนของรายการ
+                      ภายในวัสดุสำนักงาน</span
+                    >
                   </v-tooltip>
                 </legend>
                 <v-data-table
@@ -1260,6 +1415,8 @@ export default {
       saveList: [],
       SaveData: [],
       isDataLoaded: false,
+      saveEditor: "",
+      saveEditors: [],
       itemsHeader: [
         { text: "ที่", value: "index", sortable: false },
         { text: "ชื่อวัสดุ", value: "name", sortable: false },
@@ -1311,6 +1468,8 @@ export default {
       },
       viewSaveDialog: false,
       viewSaveData: {},
+      addEditorDialog: false,
+      addNewEditorName: "",
       tab: "index",
       isNumeric: (v) => /^\d+$/.test(v) || "ต้องเป็นจำนวนเต็ม",
       max8chars: (v) => v.length <= 8 || "ไม่ควรเกิน 8 ตัวอักษร",
@@ -1329,6 +1488,7 @@ export default {
     window.addEventListener("beforeunload", this.confirmBeforeUnload);
     // this.uploadJsonOverlay = true;
     this.readSaveDataFireBase();
+    this.readEditorsFirebase();
     this.resizeHandler();
   },
   computed: {
@@ -1396,11 +1556,6 @@ export default {
       return { items: [] };
     },
   },
-  watch: {
-    // isMobile(newWidth, oldWidth) {
-    //   console.log(newWidth);
-    // },
-  },
   methods: {
     resizeHandler: debounce(function () {
       this.isMobile = window.innerWidth < 600 ? true : false;
@@ -1412,7 +1567,88 @@ export default {
         ? momentInstance.format("DD MMMM YYYY, HH:mm:ss")
         : "ไม่พบเวลาบันทึก";
     },
+    readEditorsFirebase() {
+      this.loading = true;
+      this.saveEditors = [];
+      const storage = this.$fire.storage;
+      const directoryRef = storage.ref().child("save_editor/");
 
+      directoryRef
+        .child("list.json")
+        .getDownloadURL()
+        .then((url) => {
+          return fetch(url);
+        })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch JSON: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then((jsonData) => {
+          // this.saveEditors = jsonData.editor_list.map((editor) => editor.name);
+          this.saveEditors = jsonData.editor_list || [];
+          this.loading = false;
+        })
+        .catch((error) => {
+          console.error("Error fetching JSON:", error);
+          this.loading = false;
+        });
+    },
+    async updateEditorFirebase(updateType, index) {
+      try {
+        this.loading = true;
+
+        const payload = {
+          metadata: {
+            note: "หลีกเลี่ยงการแก้ไขไฟล์นี้โดยตรง",
+            date_modified: "",
+            last_edited_by: "",
+          },
+          editor_list: [...this.saveEditors],
+        };
+
+        if (updateType === "add") {
+          payload.editor_list.push({
+            name: this.addNewEditorName,
+          });
+          this.snackbar.status = true;
+          this.snackbar.text = "เพิ่มผู้แก้ไขบันทึกสำเร็จ";
+          this.snackbar.color = "success darken-1";
+          this.snackbar.icon = "mdi-check";
+          this.addNewEditorName = "";
+        } else if (updateType === "delete") {
+          const confirmMessage = `คุณต้องการลบผู้แก้ไขบันทึก "${this.saveEditors[index].name}" ใช่หรือไม่?!`;
+          if (confirm(confirmMessage)) {
+            payload.editor_list.splice(index, 1);
+            this.snackbar.status = true;
+            this.snackbar.text = "ลบผู้แก้ไขบันทึกสำเร็จ";
+            this.snackbar.color = "success darken-1";
+            this.snackbar.icon = "mdi-check";
+          } else {
+            return;
+          }
+        }
+
+        const jsonString = JSON.stringify(payload);
+        const blob = new Blob([jsonString], { type: "application/json" });
+
+        const storage = this.$fire.storage;
+        const storageRef = storage
+          .ref()
+          .child("save_editor")
+          .child("list.json");
+
+        await storageRef.put(blob);
+
+        this.readEditorsFirebase();
+      } catch (error) {
+        console.error("Error updating file to Firebase Storage:", error);
+      } finally {
+        this.addEditorDialog = false;
+        this.loading = false;
+      }
+    },
     readSaveDataFireBase() {
       this.loading = true;
       this.saveList = [];
@@ -1531,6 +1767,8 @@ export default {
         this.SaveData.metadata.date_created =
           this.SaveData.metadata.date_modified;
       }
+
+      this.SaveData.metadata.save_editor = this.saveEditor;
 
       const jsonString = JSON.stringify(this.SaveData);
       const blob = new Blob([jsonString], { type: "application/json" });
@@ -1827,5 +2065,20 @@ fieldset {
   .navbar-sticky {
     top: 0;
   }
+}
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulse-animation {
+  animation: pulse 1s infinite;
 }
 </style>
