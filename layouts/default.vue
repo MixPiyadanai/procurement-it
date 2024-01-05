@@ -10,7 +10,7 @@
         style="min-height: 100vh"
       >
         <div class="fixed-version">
-          <span>
+          <span style="background-color: white;" class="pa-1 pr-2 rounded-xl">
             <v-icon dense class="mt-n1" color="success">mdi-earth</v-icon>
             {{ version }}
           </span>
@@ -56,9 +56,10 @@ export default {
 <style scoped>
 .fixed-version {
   position: fixed;
-  padding-left: 10px;
-  padding-bottom: 10px;
+  padding-left: 3px;
+  padding-bottom: 5px;
   bottom: 0;
   left: 0;
+  z-index: 9999;
 }
 </style>
