@@ -33,9 +33,9 @@
         :disabled="!isDataLoaded"
       >
         <v-icon class="mr-2">mdi-account-group</v-icon>
-        <span class="font-weight-bold" style="font-size: larger"
-          >รวมอาจารย์</span
-        >
+        <span class="font-weight-bold" style="font-size: larger">
+          รวมอาจารย์
+        </span>
       </v-tab>
       <v-tab
         class="d-flex align-center"
@@ -125,7 +125,7 @@
                   v-bind="attrs"
                   v-on="on"
                   block
-                  large
+                  x-large
                   :class="`${!isDataLoaded ? 'pulse-animation' : ''} mb-2`"
                 >
                   <v-icon left>mdi-import</v-icon>
@@ -1021,7 +1021,7 @@
                     </template>
                   </v-data-table>
                 </fieldset>
-                <div class="d-flex justify-end px-8">
+                <div class="d-flex justify-end align-top px-8">
                   <v-menu offset-y transition="slide-y-transition">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn

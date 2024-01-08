@@ -66,8 +66,18 @@ export function standardPDF(data, type, startIndex) {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  // let currentPageValue = "";
   const docDefinition = {
+    background: function (currentPage, pageSize) {
+      return {
+        text: startIndex == 0 ? `แผ่นที่ ${currentPage}` : `แผ่นที่ ${currentPage + 1}`,
+        
+        absolutePosition: { x: 525, y: 92 },
+        style: {
+          fontSize: 16,
+          bold: true,
+        },
+      };
+    },
     pageOrientation: "portrait",
     pageSize: "A4",
     // pageMargin: [0, 0],
@@ -130,7 +140,8 @@ export function standardPDF(data, type, startIndex) {
               "",
               "",
               {
-                text: `แผ่นที่ ${startIndex == 0 ? "1" : "2"}`,
+                // text: `แผ่นที่ ${startIndex == 0 ? "1" : "2"}`,
+                text: ``,
                 style: "pageNumberHeader",
                 border: [false, false, false, false],
               },
@@ -245,16 +256,6 @@ export function standardPDF(data, type, startIndex) {
         },
       },
     ],
-    // footer: function (currentPage, pageCount, pageSize) {
-    //   currentPageValue = currentPage;
-
-    //   return {
-    //     text: currentPage.toString() + " of " + pageCount,
-    //     style: "pageNumberFooter",
-    //     alignment: "right",
-    //     margin: [0, 10, 20, 0],
-    //   };
-    // },
     defaultStyle: {
       font: "Sarabun",
       fontSize: 16,
