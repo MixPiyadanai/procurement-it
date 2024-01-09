@@ -3,9 +3,10 @@
     <v-tabs
       fixed-tabs
       :class="`mb-4 navbar-sticky elevation-2 ${isMobile ? '' : 'rounded-lg'}`"
-      dark
+      :slider-color="$vuetify.theme.isDark ? 'white' : 'primary'"
+      :color="$vuetify.theme.isDark ? 'white' : 'primary'"
+      :dark="$vuetify.theme.isDark"
       v-model="tab"
-      background-color="indigo"
     >
       <v-tab class="d-flex align-center" href="#index">
         <v-icon class="mr-2">mdi-home</v-icon>
@@ -47,8 +48,16 @@
           >รายละเอียด</span
         >
       </v-tab>
+      <v-tab
+        class="d-flex align-center"
+        href="#other"
+        :disabled="!isDataLoaded"
+      >
+        <v-icon class="mr-2">mdi-dots-horizontal</v-icon>
+        <span class="font-weight-bold" style="font-size: larger">อื่น ๆ</span>
+      </v-tab>
     </v-tabs>
-    <v-tabs-items v-model="tab">
+    <v-tabs-items v-model="tab" class="rounded-xl mb-16">
       <v-tab-item value="index" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
           <v-col cols="12" class="pt-8">
@@ -67,6 +76,9 @@
                   clearable
                   style="width: 100%"
                   :rules="[required]"
+                  :color="
+                    $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
+                  "
                 ></v-text-field>
                 <v-select
                   :items="saveEditors.map((editor) => editor.name) || []"
@@ -76,6 +88,9 @@
                   :rules="[required]"
                   hide-details
                   style="width: 100%"
+                  :color="
+                    $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
+                  "
                 >
                   <template v-slot:no-data>
                     <div class="pa-4">
@@ -132,7 +147,7 @@
                   <span class="font-weight-bold">นำเข้าไฟล์บันทึก</span>
                 </v-btn>
               </template>
-              <v-card light>
+              <v-card>
                 <v-card-title>
                   <span>นำเข้าบันทึกข้อมูลรายการจัดซื้อจัดจ้าง</span>
                 </v-card-title>
@@ -150,6 +165,11 @@
                           v-model="jsonFile"
                           outlined
                           hide-details
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                         ></v-file-input>
                       </v-card>
                       <h3>แก้ไขบันทึกภายในชื่อของ...</h3>
@@ -164,6 +184,11 @@
                           :rules="[required]"
                           hide-details
                           style="width: 100%"
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                         >
                           <template v-slot:no-data>
                             <div class="pa-4">
@@ -180,7 +205,11 @@
                           dense
                           class="ml-2"
                           @click="readSaveDataFireBase()"
-                          color="primary darken-2"
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary darken-2'
+                          "
                           :disabled="loading"
                           >mdi-reload</v-icon
                         >
@@ -269,7 +298,6 @@
                   }`"
                 >
                   <v-btn
-                    color="accent"
                     text
                     @click="uploadJsonOverlay = false"
                     :block="isMobile"
@@ -298,7 +326,7 @@
             </v-dialog>
             <v-btn
               block
-              color="success"
+              color="success darken-1"
               @click="firebaseSaveData(false)"
               :class="`${isDataLoaded ? 'pulse-animation' : ''} mb-2`"
               :disabled="!isDataLoaded"
@@ -345,13 +373,153 @@
               </v-card>
             </v-dialog>
             <v-divider class="my-8" />
+
+            <div class="d-flex align-center mb-2 mt-8">
+              <h3>รายชื่อผู้แก้ไข (ทั้งหมด)</h3>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon
+                    :color="$vuetify.theme.isDark ? 'white' : 'black'"
+                    dense
+                    dark
+                    v-bind="attrs"
+                    v-on="on"
+                    class="ml-2"
+                  >
+                    mdi-information-outline
+                  </v-icon>
+                </template>
+                <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+              </v-tooltip>
+              <v-icon
+                dense
+                class="ml-2"
+                @click="readEditorsFirebase()"
+                :color="
+                  $vuetify.theme.isDark
+                    ? 'primary lighten-4'
+                    : 'primary darken-2'
+                "
+                :disabled="loading"
+                >mdi-reload</v-icon
+              >
+              <v-spacer />
+              <v-dialog v-model="addEditorDialog" max-width="500px">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn color="success darken-1" dark v-bind="attrs" v-on="on">
+                    <v-icon> mdi-plus </v-icon>
+                    เพิ่มผู้แก้ไข
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title> เพิ่มผู้มีสิทธิ์แก้ไข </v-card-title>
+
+                  <v-card-text class="pb-0">
+                    <v-text-field
+                      outlined
+                      label="ชื่อผู้แก้ไข"
+                      :rules="[required]"
+                      v-model="addNewEditorName"
+                    ></v-text-field>
+                  </v-card-text>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text @click="addEditorDialog = false">
+                      ยกเลิก
+                    </v-btn>
+                    <v-btn color="success" @click="updateEditorFirebase('add')">
+                      เพิ่มรายชื่อ
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </div>
+            <v-data-table
+              :loading="loading"
+              :headers="[
+                { text: '#', value: 'index', sortable: false, width: '40' },
+                { text: 'ชื่อผู้แก้ไข', value: 'name', sortable: false },
+                {
+                  text: '',
+                  value: 'action',
+                  sortable: false,
+                  align: 'end',
+                },
+              ]"
+              :items="saveEditors"
+              fixed-header
+              hide-default-footer
+              :items-per-page="9999"
+              class="elevation-1 mb-8"
+            >
+              <template v-slot:no-data> ไม่พบรายชื่อผู้แก้ไข </template>
+              <template v-slot:item.index="{ index }">
+                {{ index + 1 }}
+              </template>
+              <template v-slot:item.name="props">
+                <v-edit-dialog
+                  cancel-text="ยกเลิก"
+                  save-text="บันทึก"
+                  :return-value.sync="props.item.name"
+                  large
+                  persistent
+                  @save="updateEditorFirebase('update')"
+                >
+                  <div class="py-2">{{ props.item.name }}</div>
+                  <template v-slot:input>
+                    <v-text-field
+                      v-model="props.item.name"
+                      :rules="[required]"
+                      single-line
+                      autofocus
+                      :color="
+                        $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
+                      "
+                    ></v-text-field>
+                  </template>
+                </v-edit-dialog>
+              </template>
+              <template v-slot:item.action="{ item }">
+                <v-icon
+                  color="error"
+                  @click="
+                    updateEditorFirebase('delete', saveEditors.indexOf(item))
+                  "
+                  class="ml-3"
+                  >mdi-delete</v-icon
+                >
+              </template>
+            </v-data-table>
+            <v-dialog v-model="viewSaveDialog" max-width="1000" scrollable>
+              <v-card>
+                <v-card-title class="text-h5"> ตัวอย่างบันทึก </v-card-title>
+
+                <v-card-text>
+                  <pre>
+                    {{ JSON.stringify(viewSaveData, null, 2) }}
+                  </pre>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+
+                  <v-btn color="accent" @click="viewSaveDialog = false">
+                    ปิด
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
             <div class="d-flex align-center mb-2">
               <h3>รายการบันทึกออนไลน์ (ทั้งหมด)</h3>
               <v-icon
                 dense
                 class="ml-2"
                 @click="readSaveDataFireBase()"
-                color="primary darken-2"
+                :color="
+                  $vuetify.theme.isDark
+                    ? 'primary lighten-4'
+                    : 'primary darken-2'
+                "
                 :disabled="loading"
                 >mdi-reload</v-icon
               >
@@ -446,138 +614,6 @@
                 >
               </template>
             </v-data-table>
-            <div class="d-flex align-center mb-2 mt-8">
-              <h3>รายชื่อผู้แก้ไข (ทั้งหมด)</h3>
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon
-                    color="black"
-                    dense
-                    dark
-                    v-bind="attrs"
-                    v-on="on"
-                    class="ml-2"
-                  >
-                    mdi-information-outline
-                  </v-icon>
-                </template>
-                <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
-              </v-tooltip>
-              <v-icon
-                dense
-                class="ml-2"
-                @click="readEditorsFirebase()"
-                color="primary darken-2"
-                :disabled="loading"
-                >mdi-reload</v-icon
-              >
-            </div>
-            <v-data-table
-              :loading="loading"
-              :headers="[
-                { text: '#', value: 'index', sortable: false, width: '40' },
-                { text: 'ชื่อผู้แก้ไข', value: 'name', sortable: false },
-                {
-                  text: '',
-                  value: 'action',
-                  sortable: false,
-                  align: 'end',
-                },
-              ]"
-              :items="saveEditors"
-              fixed-header
-              hide-default-footer
-              :items-per-page="9999"
-              class="elevation-1 mb-16"
-            >
-              <template v-slot:top>
-                <div class="pa-2 d-flex justify-end">
-                  <v-dialog v-model="addEditorDialog" max-width="500px">
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn color="success" dark v-bind="attrs" v-on="on">
-                        <v-icon> mdi-plus </v-icon>
-                        เพิ่มผู้แก้ไข
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title> เพิ่มผู้มีสิทธิ์แก้ไข </v-card-title>
-
-                      <v-card-text class="pb-0">
-                        <v-text-field
-                          outlined
-                          label="ชื่อผู้แก้ไข"
-                          :rules="[required]"
-                          v-model="addNewEditorName"
-                        ></v-text-field>
-                      </v-card-text>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn text @click="addEditorDialog = false">
-                          ยกเลิก
-                        </v-btn>
-                        <v-btn
-                          color="success"
-                          @click="updateEditorFirebase('add')"
-                        >
-                          เพิ่มรายชื่อ
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
-              </template>
-              <template v-slot:no-data> ไม่พบรายชื่อผู้แก้ไข </template>
-              <template v-slot:item.index="{ index }">
-                {{ index + 1 }}
-              </template>
-              <template v-slot:item.name="props">
-                <v-edit-dialog
-                  :return-value.sync="props.item.name"
-                  large
-                  persistent
-                  @save="updateEditorFirebase('update')"
-                >
-                  <div class="py-2">{{ props.item.name }}</div>
-                  <template v-slot:input>
-                    <v-text-field
-                      v-model="props.item.name"
-                      :rules="[required]"
-                      single-line
-                      autofocus
-                    ></v-text-field>
-                  </template>
-                </v-edit-dialog>
-              </template>
-              <template v-slot:item.action="{ item }">
-                <v-icon
-                  color="error"
-                  @click="
-                    updateEditorFirebase('delete', saveEditors.indexOf(item))
-                  "
-                  class="ml-3"
-                  >mdi-delete</v-icon
-                >
-              </template>
-            </v-data-table>
-            <v-dialog v-model="viewSaveDialog" max-width="1000" scrollable>
-              <v-card>
-                <v-card-title class="text-h5"> ตัวอย่างบันทึก </v-card-title>
-
-                <v-card-text>
-                  <pre>
-                    {{ JSON.stringify(viewSaveData, null, 2) }}
-                  </pre>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-
-                  <v-btn color="accent" @click="viewSaveDialog = false">
-                    ปิด
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
           </v-col>
         </v-row>
       </v-tab-item>
@@ -586,16 +622,20 @@
           <v-col
             cols="12"
             v-if="SaveData.office && SaveData.office.list"
-            class="mb-16 pb-16 pt-8"
+            class="pb-8 pt-8"
           >
             <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
-              <fieldset class="mt-3 mb-5 pa-4 rounded-lg elevation-2">
+              <fieldset
+                :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
+                  $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                }`"
+              >
                 <legend class="ml-1 px-2">
                   รายการวัสดุสำนักงาน
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        color="black"
+                        :color="$vuetify.theme.isDark ? 'white' : 'black'"
                         dense
                         dark
                         v-bind="attrs"
@@ -643,6 +683,8 @@
                   </template>
                   <template v-slot:item.name="props">
                     <v-edit-dialog
+                      cancel-text="ยกเลิก"
+                      save-text="บันทึก"
                       :return-value.sync="props.item.name"
                       large
                       persistent
@@ -654,12 +696,19 @@
                           :rules="[required]"
                           single-line
                           autofocus
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                         ></v-text-field>
                       </template>
                     </v-edit-dialog>
                   </template>
                   <template v-slot:item.quantity="props">
                     <v-edit-dialog
+                      cancel-text="ยกเลิก"
+                      save-text="บันทึก"
                       :return-value.sync="props.item.quantity"
                       large
                       persistent
@@ -674,12 +723,19 @@
                           single-line
                           autofocus
                           counter="8"
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                         ></v-text-field>
                       </template>
                     </v-edit-dialog>
                   </template>
                   <template v-slot:item.price="props">
                     <v-edit-dialog
+                      cancel-text="ยกเลิก"
+                      save-text="บันทึก"
                       :return-value.sync="props.item.price"
                       large
                       persistent
@@ -691,6 +747,11 @@
                       </div>
                       <template v-slot:input>
                         <v-text-field
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                           v-model="props.item.price"
                           :rules="[required, isFloat]"
                           single-line
@@ -704,10 +765,17 @@
                       :return-value.sync="props.item.unit"
                       large
                       persistent
+                      cancel-text="ยกเลิก"
+                      save-text="บันทึก"
                     >
                       <div>{{ props.item.unit }}</div>
                       <template v-slot:input>
                         <v-text-field
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                           v-model="props.item.unit"
                           :rules="[required]"
                           single-line
@@ -784,8 +852,9 @@
           <v-col :sm="3" :cols="12" class="pt-8">
             <v-card outlined class="py-2 rounded-xl elevation-2">
               <v-card-title>รายชื่ออาจารย์</v-card-title>
-              <v-divider class="mb-4" />
+              <v-divider />
               <v-navigation-drawer
+                color="transparent"
                 permanent
                 floating
                 class="px-4"
@@ -812,7 +881,7 @@
               </v-navigation-drawer>
             </v-card>
           </v-col>
-          <v-col :sm="9" class="pb-16 mb-16 pt-8">
+          <v-col :sm="9" class="pb-8 pt-8">
             <div v-if="SaveData.data && SaveData.data.list">
               <v-card
                 v-for="(data, index) in SaveData.data.list"
@@ -860,13 +929,17 @@
                   ></v-text-field>
                 </v-card-text>
                 <v-divider class="mt-6" />
-                <fieldset class="mt-6 mx-8 mb-4 pa-4 rounded-lg elevation-2">
+                <fieldset
+                  :class="`mt-6 mx-8 mb-4 pa-4 rounded-lg elevation-2 ${
+                    $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                  }`"
+                >
                   <legend class="ml-1 px-2">
                     รายการวัสดุ
                     <v-tooltip top>
                       <template v-slot:activator="{ on, attrs }">
                         <v-icon
-                          color="black"
+                          :color="$vuetify.theme.isDark ? 'white' : 'black'"
                           dense
                           dark
                           v-bind="attrs"
@@ -911,6 +984,8 @@
                     </template>
                     <template v-slot:item.name="props">
                       <v-edit-dialog
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
                         :return-value.sync="props.item.name"
                         large
                         persistent
@@ -922,6 +997,11 @@
                             :rules="[required]"
                             single-line
                             autofocus
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
                           ></v-text-field>
                         </template>
                       </v-edit-dialog>
@@ -931,6 +1011,8 @@
                         :return-value.sync="props.item.quantity"
                         large
                         persistent
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
                       >
                         <div>
                           {{ formatNumberWithCommas(props.item.quantity) }}
@@ -942,6 +1024,11 @@
                             single-line
                             autofocus
                             counter="8"
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
                           ></v-text-field>
                         </template>
                       </v-edit-dialog>
@@ -951,6 +1038,8 @@
                         :return-value.sync="props.item.price"
                         large
                         persistent
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
                       >
                         <div>
                           {{
@@ -965,6 +1054,11 @@
                             :rules="[required, isFloat]"
                             single-line
                             autofocus
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
                           ></v-text-field>
                         </template>
                       </v-edit-dialog>
@@ -974,6 +1068,8 @@
                         :return-value.sync="props.item.unit"
                         large
                         persistent
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
                       >
                         <div>{{ props.item.unit }}</div>
                         <template v-slot:input>
@@ -982,6 +1078,11 @@
                             :rules="[required]"
                             single-line
                             autofocus
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
                           ></v-text-field>
                         </template>
                       </v-edit-dialog>
@@ -1052,11 +1153,10 @@
 
             <v-btn
               block
-              color="success"
+              color="success darken-1"
               @click="addTeacher"
               large
               depressed
-              class="mb-16"
             >
               <v-icon left>mdi-plus</v-icon>
               เพิ่มอาจารย์
@@ -1066,15 +1166,19 @@
       </v-tab-item>
       <v-tab-item value="multiTeacher" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
-          <v-col :sm="12" class="pb-16 mb-16 pt-8">
+          <v-col :sm="12" class="pb-8 pt-8">
             <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
-              <fieldset class="mt-3 mb-5 pa-4 rounded-lg elevation-2">
+              <fieldset
+                :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
+                  $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                }`"
+              >
                 <legend class="ml-1 px-2">
                   รวมอาจารย์
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        color="black"
+                        :color="$vuetify.theme.isDark ? 'white' : 'black'"
                         dense
                         dark
                         v-bind="attrs"
@@ -1166,15 +1270,19 @@
       </v-tab-item>
       <v-tab-item value="summary" :class="isMobile ? 'px-8' : 'px-4'">
         <v-row>
-          <v-col :sm="12" class="pb-16 mb-16 pt-8">
+          <v-col :sm="12" class="pb-8 pt-8">
             <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
-              <fieldset class="mt-3 mb-5 pa-4 rounded-lg elevation-2">
+              <fieldset
+                :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
+                  $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                }`"
+              >
                 <legend class="ml-1 px-2">
                   รายละเอียด
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon
-                        color="black"
+                        :color="$vuetify.theme.isDark ? 'white' : 'black'"
                         dense
                         dark
                         v-bind="attrs"
@@ -1240,6 +1348,8 @@
                       :return-value.sync="props.item.opBudget"
                       large
                       persistent
+                      cancel-text="ยกเลิก"
+                      save-text="บันทึก"
                     >
                       {{
                         formatNumberWithCommas(formatPrice(props.item.opBudget))
@@ -1250,6 +1360,11 @@
                           :rules="[required, isFloat]"
                           single-line
                           autofocus
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                         ></v-text-field>
                       </template>
                     </v-edit-dialog>
@@ -1259,6 +1374,8 @@
                       :return-value.sync="props.item.subBudget"
                       large
                       persistent
+                      cancel-text="ยกเลิก"
+                      save-text="บันทึก"
                     >
                       {{
                         formatNumberWithCommas(
@@ -1267,6 +1384,11 @@
                       }}
                       <template v-slot:input>
                         <v-text-field
+                          :color="
+                            $vuetify.theme.isDark
+                              ? 'primary lighten-4'
+                              : 'primary'
+                          "
                           v-model="props.item.subBudget"
                           :rules="[required, isFloat]"
                           single-line
@@ -1374,6 +1496,68 @@
           ></v-col>
         </v-row>
       </v-tab-item>
+      <v-tab-item value="other" :class="isMobile ? 'px-8' : 'px-4'">
+        <v-row>
+          <v-col :sm="12" class="pb-8 pt-8">
+            <v-card
+              v-if="isDataLoaded && SaveData.metadata"
+              outlined
+              class="mb-6 rounded-xl elevation-2"
+            >
+              <v-card-title>เอกสาร 1</v-card-title>
+              <v-divider />
+              <v-card-text class="py-8 px-8">
+                <fieldset
+                  :class="`pa-4 rounded-lg elevation-2 ${
+                    $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                  }`"
+                >
+                  <legend class="ml-1 px-2">ข้อมูลเอกสาร</legend>
+                  <v-text-field label="Outlined" outlined></v-text-field>
+                  <v-text-field label="Outlined" outlined></v-text-field>
+                  <v-text-field label="Outlined" outlined></v-text-field>
+                  <v-textarea
+                    outlined
+                    name="input-7-4"
+                    label="Outlined textarea"
+                    value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
+                  ></v-textarea>
+                  <v-textarea
+                    outlined
+                    name="input-7-4"
+                    label="Outlined textarea"
+                    value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
+                  ></v-textarea>
+                </fieldset>
+              </v-card-text>
+              <v-card-actions class="d-flex justify-end px-8 py-4">
+                <v-menu offset-y transition="slide-y-transition">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      depressed
+                    >
+                      <v-icon left> mdi-printer </v-icon>
+                      พิมพ์เอกสาร
+                    </v-btn>
+                  </template>
+                  <v-list class="py-0">
+                    <v-list-item>
+                      <v-list-item-title class="px-0">
+                        <v-btn text block> PDF </v-btn>
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-divider />
+                  </v-list>
+                </v-menu>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-tab-item>
     </v-tabs-items>
     <v-snackbar
       v-model="snackbar.status"
@@ -1382,13 +1566,19 @@
       right
       :timeout="6000"
       multi-line
+      :min-width="275"
+      :min-height="50"
     >
       <div class="d-flex justify-space-between">
-        <v-icon>{{ snackbar.icon }}</v-icon>
-        <span class="text-right font-weight-bold" style="font-size: 1.25rem">{{
+        <span class="text-right font-weight-bold" style="font-size: 1.1rem">{{
           snackbar.text
         }}</span>
       </div>
+      <template v-slot:action="{ attrs }">
+        <v-btn color="white" icon v-bind="attrs" @click="snackbar = false">
+          <v-icon>mdi-close-thick</v-icon>
+        </v-btn>
+      </template>
     </v-snackbar>
   </div>
 </template>
@@ -1399,9 +1589,41 @@ import THBText from "thai-baht-text";
 import moment from "moment";
 moment.locale("th");
 import { debounce } from "~/utils/debounce";
+import { mapMutations } from "vuex";
 
 export default {
   name: "IndexPage",
+  head() {
+    let pageTitle = "";
+
+    switch (this.$store.state.tab.tab) {
+      case "index":
+        pageTitle = "หน้าแรก";
+        break;
+      case "officeItems":
+        pageTitle = "สำนักงาน";
+        break;
+      case "singleTeacher":
+        pageTitle = "อาจารย์";
+        break;
+      case "multiTeacher":
+        pageTitle = "รวมอาจารย์";
+        break;
+      case "summary":
+        pageTitle = "รายละเอียด";
+        break;
+      case "other":
+        pageTitle = "อื่น ๆ";
+        break;
+      default:
+        pageTitle = "หน้าอื่น ๆ";
+    }
+
+    return {
+      titleTemplate: `${pageTitle} %s`,
+    };
+  },
+
   data() {
     return {
       screenWidth: process.client ? window.innerWidth : 0,
@@ -1464,7 +1686,6 @@ export default {
         status: false,
         text: "",
         color: "",
-        icon: "",
       },
       viewSaveDialog: false,
       viewSaveData: {},
@@ -1556,7 +1777,13 @@ export default {
       return { items: [] };
     },
   },
+  watch: {
+    tab(newTab) {
+      this.$store.dispatch("tab/changeTab", newTab);
+    },
+  },
   methods: {
+    ...mapMutations("tab", ["changeTab"]),
     resizeHandler: debounce(function () {
       this.isMobile = window.innerWidth < 600 ? true : false;
     }, 100),
@@ -1615,7 +1842,6 @@ export default {
           this.snackbar.status = true;
           this.snackbar.text = "เพิ่มผู้แก้ไขบันทึกสำเร็จ";
           this.snackbar.color = "success darken-1";
-          this.snackbar.icon = "mdi-check";
           this.addNewEditorName = "";
         } else if (updateType === "delete") {
           const confirmMessage = `คุณต้องการลบผู้แก้ไขบันทึก "${this.saveEditors[index].name}" ใช่หรือไม่?!`;
@@ -1624,7 +1850,6 @@ export default {
             this.snackbar.status = true;
             this.snackbar.text = "ลบผู้แก้ไขบันทึกสำเร็จ";
             this.snackbar.color = "success darken-1";
-            this.snackbar.icon = "mdi-check";
           } else {
             return;
           }
@@ -1783,7 +2008,6 @@ export default {
           this.snackbar.status = true;
           this.snackbar.text = "บันทึกข้อมูลสำเร็จ";
           this.snackbar.color = "success darken-1";
-          this.snackbar.icon = "mdi-check";
         })
         .catch((error) => {
           console.error("Error uploading file to Firebase Storage:", error);
@@ -1925,7 +2149,6 @@ export default {
           this.snackbar.status = true;
           this.snackbar.text = "เวอร์ชั่นของบันทึกไม่ตรงกัน!";
           this.snackbar.color = "error darken-1";
-          this.snackbar.icon = "mdi-alert";
           return;
         }
         this.SaveData = [];
@@ -1934,7 +2157,6 @@ export default {
         this.snackbar.status = true;
         this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
         this.snackbar.color = "success darken-1";
-        this.snackbar.icon = "mdi-check";
       } else if (type === "new") {
         const emptyJsonPath = "/empty.json";
         const reservedKeys = this.SaveData.metadata
@@ -1950,7 +2172,6 @@ export default {
             this.snackbar.status = true;
             this.snackbar.text = "สร้างบันทึกใหม่สำเร็จ";
             this.snackbar.color = "success darken-1";
-            this.snackbar.icon = "mdi-check";
           })
           .catch((error) => {
             console.error("Error loading empty.json", error);
@@ -1962,7 +2183,6 @@ export default {
         this.snackbar.status = true;
         this.snackbar.text = "นำเข้าบันทึกสำเร็จ";
         this.snackbar.color = "success darken-1";
-        this.snackbar.icon = "mdi-check";
       }
       this.isDataLoaded = true;
     },
@@ -2004,7 +2224,6 @@ export default {
             this.snackbar.status = true;
             this.snackbar.text = "ลบบันทึกสำเร็จ";
             this.snackbar.color = "success darken-1";
-            this.snackbar.icon = "mdi-check";
             this.readSaveDataFireBase();
           })
           .catch((error) => {
@@ -2035,13 +2254,11 @@ export default {
   position: absolute;
   top: 10.7em;
   right: 56px;
-  background: #fff;
 }
 .legend-right-office {
   position: absolute;
   top: 1.4em;
   right: 60px;
-  background: #fff;
 }
 
 .delete-teacher {
@@ -2051,8 +2268,12 @@ export default {
   z-index: 1;
 }
 
-fieldset {
+// $vuetify.thmem.isDark
+.light-fieldset {
   border: 2px groove #3f51b5;
+}
+.dark-fieldset {
+  border: 2px groove #a1ceff;
 }
 
 .navbar-sticky {

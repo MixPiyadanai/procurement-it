@@ -9,7 +9,7 @@ export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: "%s",
-    title: "ระบบการจัดซื้อจัดจ้าง",
+    title: " - ระบบการจัดซื้อจัดจ้าง",
     htmlAttrs: {
       lang: "en",
     },
@@ -52,7 +52,7 @@ export default {
   vuetify: {
     customVariables: ["~/assets/variables.scss"],
     theme: {
-      dark: false,
+      dark: true,
       themes: {
         dark: {
           primary: colors.blue.darken2,

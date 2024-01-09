@@ -6,14 +6,41 @@
         <v-spacer></v-spacer>
       </v-app-bar> -->
       <v-container
-        :class="`elevation-2 ${isMobile ? 'pa-0' : 'px-8'}`"
+        :class="` ${isMobile ? 'pa-0' : 'px-8'}`"
         style="min-height: 100vh"
       >
         <div class="fixed-version">
-          <span style="background-color: white;" class="pa-1 pr-2 rounded-xl">
+          <span
+            :style="
+              $vuetify.theme.isDark
+                ? 'background-color: #121212'
+                : 'background-color: #ffffff'
+            "
+            class="pa-1 pr-2 rounded-xl"
+          >
             <v-icon dense class="mt-n1" color="success">mdi-earth</v-icon>
             {{ version }}
           </span>
+        </div>
+        <div class="fixed-toggle-theme">
+          <v-btn
+            icon
+            elevation="2"
+            @click="toggleTheme"
+            :style="
+              $vuetify.theme.isDark
+                ? 'background-color: #ffffff'
+                : 'background-color: #121212'
+            "
+          >
+            <v-icon :color="!$vuetify.theme.isDark ? 'white' : 'black'">
+              {{
+                $vuetify.theme.isDark
+                  ? "mdi-moon-waxing-crescent"
+                  : "mdi-white-balance-sunny"
+              }}
+            </v-icon>
+          </v-btn>
         </div>
         <Nuxt />
       </v-container>
@@ -44,6 +71,11 @@ export default {
     resizeHandler: debounce(function () {
       this.isMobile = window.innerWidth < 600 ? true : false;
     }, 100),
+    toggleTheme() {
+      const vuetify = this.$vuetify;
+
+      vuetify.theme.isDark = !vuetify.theme.isDark;
+    },
   },
   beforeDestroy() {
     if (process.client) {
@@ -61,5 +93,14 @@ export default {
   bottom: 0;
   left: 0;
   z-index: 9999;
+}
+
+.fixed-toggle-theme {
+  position: fixed;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  bottom: 0;
+  right: 0;
+  z-index: 999;
 }
 </style>
