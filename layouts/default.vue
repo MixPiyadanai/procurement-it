@@ -9,7 +9,7 @@
         :class="` ${isMobile ? 'pa-0' : 'px-8'}`"
         style="min-height: 100vh"
       >
-        <div class="fixed-version">
+        <div class="fixed-version" v-if="false">
           <span
             :style="
               $vuetify.theme.isDark
@@ -22,7 +22,7 @@
             {{ version }}
           </span>
         </div>
-        <div class="fixed-toggle-theme">
+        <div class="fixed-toggle-theme" v-if="false">
           <v-btn
             icon
             elevation="2"

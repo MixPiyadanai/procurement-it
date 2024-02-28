@@ -2,7 +2,7 @@ import colors from "vuetify/es5/util/colors";
 require("dotenv").config();
 
 export default {
-  target: 'static',
+  target: "static",
   server: {
     port: 3010,
   },
@@ -42,7 +42,12 @@ export default {
   },
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: ["@nuxtjs/axios", "@nuxtjs/moment", "@nuxtjs/firebase"],
+  modules: [
+    "@nuxtjs/axios",
+    "@nuxtjs/moment",
+    "@nuxtjs/firebase",
+    "@nuxtjs/auth",
+  ],
 
   axios: {
     // proxy: true
@@ -52,7 +57,7 @@ export default {
   vuetify: {
     customVariables: ["~/assets/variables.scss"],
     theme: {
-      dark: true,
+      dark: false,
       themes: {
         dark: {
           primary: colors.blue.darken2,
