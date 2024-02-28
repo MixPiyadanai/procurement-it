@@ -1,942 +1,665 @@
 <template>
   <div>
-    <v-tabs
-      fixed-tabs
-      :class="`mb-4 navbar-sticky elevation-2 ${isMobile ? '' : 'rounded-lg'}`"
-      :slider-color="$vuetify.theme.isDark ? 'white' : 'primary'"
-      :color="$vuetify.theme.isDark ? 'white' : 'primary'"
-      :dark="$vuetify.theme.isDark"
-      v-model="tab"
-    >
-      <v-tab class="d-flex align-center" href="#index">
-        <v-icon class="mr-2">mdi-home</v-icon>
-        <span class="font-weight-bold" style="font-size: larger">หน้าหลัก</span>
-      </v-tab>
-      <v-tab
-        class="d-flex align-center"
-        href="#officeItems"
-        :disabled="!isDataLoaded"
+    <div v-if="authStatus">
+      <v-tabs
+        fixed-tabs
+        :class="`mb-4 navbar-sticky elevation-2 ${
+          isMobile ? '' : 'rounded-lg'
+        }`"
+        :slider-color="$vuetify.theme.isDark ? 'white' : 'primary'"
+        :color="$vuetify.theme.isDark ? 'white' : 'primary'"
+        :dark="$vuetify.theme.isDark"
+        v-model="tab"
       >
-        <v-icon class="mr-2">mdi-chair-rolling</v-icon>
-        <span class="font-weight-bold" style="font-size: larger">สำนักงาน</span>
-      </v-tab>
-      <v-tab
-        class="d-flex align-center"
-        href="#singleTeacher"
-        :disabled="!isDataLoaded"
-      >
-        <v-icon class="mr-2">mdi-account</v-icon>
-        <span class="font-weight-bold" style="font-size: larger">อาจารย์</span>
-      </v-tab>
-      <v-tab
-        class="d-flex align-center"
-        href="#multiTeacher"
-        :disabled="!isDataLoaded"
-      >
-        <v-icon class="mr-2">mdi-account-group</v-icon>
-        <span class="font-weight-bold" style="font-size: larger">
-          รวมอาจารย์
-        </span>
-      </v-tab>
-      <v-tab
-        class="d-flex align-center"
-        href="#summary"
-        :disabled="!isDataLoaded"
-      >
-        <v-icon class="mr-2">mdi-view-list</v-icon>
-        <span class="font-weight-bold" style="font-size: larger"
-          >รายละเอียด</span
+        <v-tab class="d-flex align-center" href="#index">
+          <v-icon class="mr-2">mdi-home</v-icon>
+          <span class="font-weight-bold" style="font-size: larger"
+            >หน้าหลัก</span
+          >
+        </v-tab>
+        <v-tab
+          class="d-flex align-center"
+          href="#officeItems"
+          :disabled="!isDataLoaded"
         >
-      </v-tab>
-      <v-tab
-        class="d-flex align-center"
-        href="#other"
-        :disabled="!isDataLoaded"
-      >
-        <v-icon class="mr-2">mdi-dots-horizontal</v-icon>
-        <span class="font-weight-bold" style="font-size: larger">อื่น ๆ</span>
-      </v-tab>
-    </v-tabs>
-    <v-tabs-items v-model="tab" class="rounded-xl mb-16">
-      <v-tab-item value="index" :class="isMobile ? 'px-8' : 'px-4'">
-        <v-row>
-          <v-col cols="12" class="pt-8">
-            <v-card
-              v-if="isDataLoaded && SaveData.metadata"
-              outlined
-              class="mb-6 rounded-xl elevation-2"
-            >
-              <v-card-title> ข้อมูลไฟล์บันทึก </v-card-title>
-              <v-divider />
-              <v-card-text class="py-8 px-8 d-flex flex-column align-center">
-                <v-text-field
-                  v-model="SaveData.metadata.name"
-                  label="ชื่อไฟล์บันทึก"
-                  outlined
-                  clearable
-                  style="width: 100%"
-                  :rules="[required]"
-                  :color="
-                    $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
-                  "
-                ></v-text-field>
-                <v-select
-                  :items="saveEditors.map((editor) => editor.name) || []"
-                  label="ชื่อผู้แก้ไข"
-                  outlined
-                  v-model="saveEditor"
-                  :rules="[required]"
-                  hide-details
-                  style="width: 100%"
-                  :color="
-                    $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
-                  "
-                >
-                  <template v-slot:no-data>
-                    <div class="pa-4">
-                      ไม่พบรายชือ (เพิ่มรายชื่อที่หน้าหลัก)
-                    </div>
-                  </template>
-                </v-select>
-              </v-card-text>
-              <v-divider v-if="!isMobile" />
-              <v-card-actions
-                :class="`d-flex ${
-                  isMobile
-                    ? 'flex-column-reverse px-8 pb-8'
-                    : ' justify-end px-8 py-4'
-                }`"
+          <v-icon class="mr-2">mdi-chair-rolling</v-icon>
+          <span class="font-weight-bold" style="font-size: larger"
+            >สำนักงาน</span
+          >
+        </v-tab>
+        <v-tab
+          class="d-flex align-center"
+          href="#singleTeacher"
+          :disabled="!isDataLoaded"
+        >
+          <v-icon class="mr-2">mdi-account</v-icon>
+          <span class="font-weight-bold" style="font-size: larger"
+            >อาจารย์</span
+          >
+        </v-tab>
+        <v-tab
+          class="d-flex align-center"
+          href="#multiTeacher"
+          :disabled="!isDataLoaded"
+        >
+          <v-icon class="mr-2">mdi-account-group</v-icon>
+          <span class="font-weight-bold" style="font-size: larger">
+            รวมอาจารย์
+          </span>
+        </v-tab>
+        <v-tab
+          class="d-flex align-center"
+          href="#summary"
+          :disabled="!isDataLoaded"
+        >
+          <v-icon class="mr-2">mdi-view-list</v-icon>
+          <span class="font-weight-bold" style="font-size: larger"
+            >รายละเอียด</span
+          >
+        </v-tab>
+        <v-tab
+          class="d-flex align-center"
+          href="#other"
+          :disabled="!isDataLoaded"
+        >
+          <v-icon class="mr-2">mdi-dots-horizontal</v-icon>
+          <span class="font-weight-bold" style="font-size: larger">อื่น ๆ</span>
+        </v-tab>
+      </v-tabs>
+      <v-tabs-items v-model="tab" class="rounded-xl mb-16">
+        <v-tab-item value="index" :class="isMobile ? 'px-8' : 'px-4'">
+          <v-row>
+            <v-col cols="12" class="pt-8">
+              <v-card
+                v-if="isDataLoaded && SaveData.metadata"
+                outlined
+                class="mb-6 rounded-xl elevation-2"
               >
-                <v-btn
-                  color="primary darken-2"
-                  @click="exportSaveLocal"
-                  :block="isMobile"
-                  :class="isMobile ? 'mt-2' : ''"
-                >
-                  <v-icon left>mdi-export</v-icon>
-                  ส่งออกไฟล์บันทึก
-                </v-btn>
-                <v-btn
-                  color="primary lighten-2"
-                  @click="firebaseSaveData(true)"
-                  :block="isMobile"
-                  :class="isMobile ? 'ml-0' : 'ml-3'"
-                >
-                  <v-icon left>mdi-content-copy</v-icon>
-                  คัดลอกไฟล์บันทึก
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-
-            <v-dialog
-              v-model="uploadJsonOverlay"
-              persistent
-              width="1000"
-              :fullscreen="isMobile"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="primary"
-                  v-bind="attrs"
-                  v-on="on"
-                  block
-                  x-large
-                  :class="`${!isDataLoaded ? 'pulse-animation' : ''} mb-2`"
-                >
-                  <v-icon left>mdi-import</v-icon>
-                  <span class="font-weight-bold">นำเข้าไฟล์บันทึก</span>
-                </v-btn>
-              </template>
-              <v-card>
-                <v-card-title>
-                  <span>นำเข้าบันทึกข้อมูลรายการจัดซื้อจัดจ้าง</span>
-                </v-card-title>
-                <v-card-text :class="isMobile ? 'mt-2' : ''">
-                  <v-row>
-                    <v-col :cols="isMobile ? 12 : 6">
-                      <h3>โหลดบันทึก</h3>
-                      <v-card outlined class="pa-8 mt-2 mb-4 elevation-2">
-                        <v-file-input
-                          accept="application/json"
-                          label="เลือกไฟล์บันทึก JSON"
-                          prepend-icon="mdi-paperclip"
-                          @change="handleFileUpload"
-                          clearable
-                          v-model="jsonFile"
-                          outlined
-                          hide-details
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                        ></v-file-input>
-                      </v-card>
-                      <h3>แก้ไขบันทึกภายในชื่อของ...</h3>
-                      <v-card outlined class="pa-8 mt-2 elevation-2">
-                        <v-select
-                          :items="
-                            saveEditors.map((editor) => editor.name) || []
-                          "
-                          label="ชื่อผู้แก้ไข"
-                          outlined
-                          v-model="saveEditor"
-                          :rules="[required]"
-                          hide-details
-                          style="width: 100%"
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                        >
-                          <template v-slot:no-data>
-                            <div class="pa-4">
-                              ไม่พบรายชือ (เพิ่มรายชื่อที่หน้าหลัก)
-                            </div>
-                          </template>
-                        </v-select>
-                      </v-card>
-                    </v-col>
-                    <v-col :cols="isMobile ? 12 : 6">
-                      <div class="d-flex align-center mb-2">
-                        <h3>โหลดบันทึกออนไลน์</h3>
-                        <v-icon
-                          dense
-                          class="ml-2"
-                          @click="readSaveDataFireBase()"
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary darken-2'
-                          "
-                          :disabled="loading"
-                          >mdi-reload</v-icon
-                        >
+                <v-card-title> ข้อมูลไฟล์บันทึก </v-card-title>
+                <v-divider />
+                <v-card-text class="py-8 px-8 d-flex flex-column align-center">
+                  <v-text-field
+                    v-model="SaveData.metadata.name"
+                    label="ชื่อไฟล์บันทึก"
+                    outlined
+                    clearable
+                    style="width: 100%"
+                    :rules="[required]"
+                    :color="
+                      $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
+                    "
+                  ></v-text-field>
+                  <v-select
+                    :items="saveEditors.map((editor) => editor.name) || []"
+                    label="ชื่อผู้แก้ไข"
+                    outlined
+                    v-model="saveEditor"
+                    :rules="[required]"
+                    hide-details
+                    style="width: 100%"
+                    :color="
+                      $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
+                    "
+                  >
+                    <template v-slot:no-data>
+                      <div class="pa-4">
+                        ไม่พบรายชือ (เพิ่มรายชื่อที่หน้าหลัก)
                       </div>
-                      <v-progress-linear
-                        v-if="loading"
-                        indeterminate
-                        color="primary"
-                        class="mb-0 mt-2"
-                      ></v-progress-linear>
-                      <v-card outlined class="elevation-2">
-                        <v-virtual-scroll
-                          :items="saveList"
-                          :item-height="88"
-                          min-height="500"
-                          height="500"
-                        >
-                          <template v-slot:default="{ item, index }">
-                            <v-list-item
-                              two-line
-                              @click="
-                                handleUploadJsonSuccess('loadOnline', index)
-                              "
-                              :disabled="saveEditor == ''"
-                            >
-                              <v-list-item-content>
-                                <v-list-item-title>
-                                  {{
-                                    item.metadata.name || "ไม่ได้ตั้งชื่อบันทึก"
-                                  }}
-                                </v-list-item-title>
-                                <v-list-item-subtitle style="line-height: 1.5">
-                                  แก้ไขล่าสุด:
-                                  {{
-                                    readableDateFormat(
-                                      item.metadata.date_modified
-                                    ) || "ไม่พบเวลาบันทึก"
-                                  }}
-                                  <br />
-                                  รหัสบันทึก:
-                                  {{
-                                    item &&
-                                    item.metadata &&
-                                    item.metadata.save_key &&
-                                    item.metadata.save_key.length > 5
-                                      ? `${item.metadata.save_key.substring(
-                                          0,
-                                          5
-                                        )}....`
-                                      : item.metadata.save_key ||
-                                        "ไม่พบรหัสบันทึก"
-                                  }}
-                                  <span class="ml-4">
-                                    เวอร์ชั่นบันทึก:
-                                    <v-icon
-                                      small
-                                      :color="
-                                        item.metadata.version == '1.0.0'
-                                          ? 'success'
-                                          : 'error'
-                                      "
-                                      >{{
-                                        item.metadata.version == "1.0.0"
-                                          ? "mdi-check-circle"
-                                          : "mdi-close-circle"
-                                      }}</v-icon
-                                    >
-                                    {{ item.metadata.version }}
-                                  </span>
-                                </v-list-item-subtitle>
-                              </v-list-item-content>
-                            </v-list-item>
-                            <v-divider />
-                          </template>
-                        </v-virtual-scroll>
-                      </v-card>
-                    </v-col>
-                  </v-row>
+                    </template>
+                  </v-select>
                 </v-card-text>
-
-                <v-divider></v-divider>
-
+                <v-divider v-if="!isMobile" />
                 <v-card-actions
                   :class="`d-flex ${
-                    isMobile ? 'flex-column-reverse' : 'justify-end'
+                    isMobile
+                      ? 'flex-column-reverse px-8 pb-8'
+                      : ' justify-end px-8 py-4'
                   }`"
                 >
                   <v-btn
-                    text
-                    @click="uploadJsonOverlay = false"
+                    color="primary darken-2"
+                    @click="exportSaveLocal"
                     :block="isMobile"
-                    :class="isMobile ? 'mt-4' : ''"
+                    :class="isMobile ? 'mt-2' : ''"
                   >
-                    ยกเลิก
+                    <v-icon left>mdi-export</v-icon>
+                    ส่งออกไฟล์บันทึก
                   </v-btn>
+                  <v-btn
+                    color="primary lighten-2"
+                    @click="firebaseSaveData(true)"
+                    :block="isMobile"
+                    :class="isMobile ? 'ml-0' : 'ml-3'"
+                  >
+                    <v-icon left>mdi-content-copy</v-icon>
+                    คัดลอกไฟล์บันทึก
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+
+              <v-dialog
+                v-model="uploadJsonOverlay"
+                persistent
+                width="1000"
+                :fullscreen="isMobile"
+              >
+                <template v-slot:activator="{ on, attrs }">
                   <v-btn
                     color="primary"
-                    @click="handleUploadJsonSuccess('new')"
-                    :block="isMobile"
-                    :class="isMobile ? 'mt-4' : ''"
-                  >
-                    เริ่มต้นใหม่
-                  </v-btn>
-                  <v-btn
-                    color="success"
-                    :disabled="!isJsonSuccessUpload || saveEditor == ''"
-                    @click="handleUploadJsonSuccess('load')"
-                    :block="isMobile"
-                    :class="isMobile ? 'mt-4' : ''"
-                    >โหลดบันทึก</v-btn
-                  >
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-            <v-btn
-              block
-              color="success darken-1"
-              @click="firebaseSaveData(false)"
-              :class="`${isDataLoaded ? 'pulse-animation' : ''} mb-2`"
-              :disabled="!isDataLoaded"
-              x-large
-            >
-              <v-icon left>mdi-content-save</v-icon>
-              <span class="font-weight-bold">บันทึกไฟล์บันทึก </span>
-            </v-btn>
-            <v-dialog v-model="wipeFieldOverlay" persistent width="400">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="error"
-                  v-bind="attrs"
-                  v-on="on"
-                  block
-                  class="mb-2"
-                  :disabled="!isDataLoaded"
-                >
-                  <v-icon left>mdi-alert-outline</v-icon>
-                  <span class="font-weight-bold">ล้างข้อมูล </span>
-                </v-btn>
-              </template>
-              <v-card light class="d-flex flex-column pt-8">
-                <v-icon style="font-size: 10rem" color="error darken-1">
-                  mdi-alert
-                </v-icon>
-                <span class="text-center" style="font-size: 1.5rem"
-                  >ล้างข้อมูลที่กำลังแสดงผลทั้งหมด</span
-                >
-                <v-divider class="mt-8"></v-divider>
-
-                <v-card-actions class="d-flex justify-end">
-                  <v-btn
-                    color="accent"
-                    @click="wipeFieldOverlay = false"
-                    depressed
-                  >
-                    ยกเลิก
-                  </v-btn>
-                  <v-btn @click="wipeSaveData" text color="error"
-                    >ล้างข้อมูล</v-btn
-                  >
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-            <v-divider class="my-8" />
-
-            <div class="d-flex align-center mb-2 mt-8">
-              <h3>รายชื่อผู้แก้ไข (ทั้งหมด)</h3>
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon
-                    :color="$vuetify.theme.isDark ? 'white' : 'black'"
-                    dense
-                    dark
                     v-bind="attrs"
                     v-on="on"
-                    class="ml-2"
+                    block
+                    x-large
+                    :class="`${!isDataLoaded ? 'pulse-animation' : ''} mb-2`"
                   >
-                    mdi-information-outline
-                  </v-icon>
-                </template>
-                <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
-              </v-tooltip>
-              <v-icon
-                dense
-                class="ml-2"
-                @click="readEditorsFirebase()"
-                :color="
-                  $vuetify.theme.isDark
-                    ? 'primary lighten-4'
-                    : 'primary darken-2'
-                "
-                :disabled="loading"
-                >mdi-reload</v-icon
-              >
-              <v-spacer />
-              <v-dialog v-model="addEditorDialog" max-width="500px">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn color="success darken-1" dark v-bind="attrs" v-on="on">
-                    <v-icon> mdi-plus </v-icon>
-                    เพิ่มผู้แก้ไข
+                    <v-icon left>mdi-import</v-icon>
+                    <span class="font-weight-bold">นำเข้าไฟล์บันทึก</span>
                   </v-btn>
                 </template>
                 <v-card>
-                  <v-card-title> เพิ่มผู้มีสิทธิ์แก้ไข </v-card-title>
-
-                  <v-card-text class="pb-0">
-                    <v-text-field
-                      outlined
-                      label="ชื่อผู้แก้ไข"
-                      :rules="[required]"
-                      v-model="addNewEditorName"
-                    ></v-text-field>
+                  <v-card-title>
+                    <span>นำเข้าบันทึกข้อมูลรายการจัดซื้อจัดจ้าง</span>
+                  </v-card-title>
+                  <v-card-text :class="isMobile ? 'mt-2' : ''">
+                    <v-row>
+                      <v-col :cols="isMobile ? 12 : 6">
+                        <h3>โหลดบันทึก</h3>
+                        <v-card outlined class="pa-8 mt-2 mb-4 elevation-2">
+                          <v-file-input
+                            accept="application/json"
+                            label="เลือกไฟล์บันทึก JSON"
+                            prepend-icon="mdi-paperclip"
+                            @change="handleFileUpload"
+                            clearable
+                            v-model="jsonFile"
+                            outlined
+                            hide-details
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
+                          ></v-file-input>
+                        </v-card>
+                        <h3>แก้ไขบันทึกภายในชื่อของ...</h3>
+                        <v-card outlined class="pa-8 mt-2 elevation-2">
+                          <v-select
+                            :items="
+                              saveEditors.map((editor) => editor.name) || []
+                            "
+                            label="ชื่อผู้แก้ไข"
+                            outlined
+                            v-model="saveEditor"
+                            :rules="[required]"
+                            hide-details
+                            style="width: 100%"
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
+                          >
+                            <template v-slot:no-data>
+                              <div class="pa-4">
+                                ไม่พบรายชือ (เพิ่มรายชื่อที่หน้าหลัก)
+                              </div>
+                            </template>
+                          </v-select>
+                        </v-card>
+                      </v-col>
+                      <v-col :cols="isMobile ? 12 : 6">
+                        <div class="d-flex align-center mb-2">
+                          <h3>โหลดบันทึกออนไลน์</h3>
+                          <v-icon
+                            dense
+                            class="ml-2"
+                            @click="readSaveDataFireBase()"
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary darken-2'
+                            "
+                            :disabled="loading"
+                            >mdi-reload</v-icon
+                          >
+                        </div>
+                        <v-progress-linear
+                          v-if="loading"
+                          indeterminate
+                          color="primary"
+                          class="mb-0 mt-2"
+                        ></v-progress-linear>
+                        <v-card outlined class="elevation-2">
+                          <v-virtual-scroll
+                            :items="saveList"
+                            :item-height="88"
+                            min-height="500"
+                            height="500"
+                          >
+                            <template v-slot:default="{ item, index }">
+                              <v-list-item
+                                two-line
+                                @click="
+                                  handleUploadJsonSuccess('loadOnline', index)
+                                "
+                                :disabled="saveEditor == ''"
+                              >
+                                <v-list-item-content>
+                                  <v-list-item-title>
+                                    {{
+                                      item.metadata.name ||
+                                      "ไม่ได้ตั้งชื่อบันทึก"
+                                    }}
+                                  </v-list-item-title>
+                                  <v-list-item-subtitle
+                                    style="line-height: 1.5"
+                                  >
+                                    แก้ไขล่าสุด:
+                                    {{
+                                      readableDateFormat(
+                                        item.metadata.date_modified
+                                      ) || "ไม่พบเวลาบันทึก"
+                                    }}
+                                    <br />
+                                    รหัสบันทึก:
+                                    {{
+                                      item &&
+                                      item.metadata &&
+                                      item.metadata.save_key &&
+                                      item.metadata.save_key.length > 5
+                                        ? `${item.metadata.save_key.substring(
+                                            0,
+                                            5
+                                          )}....`
+                                        : item.metadata.save_key ||
+                                          "ไม่พบรหัสบันทึก"
+                                    }}
+                                    <span class="ml-4">
+                                      เวอร์ชั่นบันทึก:
+                                      <v-icon
+                                        small
+                                        :color="
+                                          item.metadata.version == '1.0.0'
+                                            ? 'success'
+                                            : 'error'
+                                        "
+                                        >{{
+                                          item.metadata.version == "1.0.0"
+                                            ? "mdi-check-circle"
+                                            : "mdi-close-circle"
+                                        }}</v-icon
+                                      >
+                                      {{ item.metadata.version }}
+                                    </span>
+                                  </v-list-item-subtitle>
+                                </v-list-item-content>
+                              </v-list-item>
+                              <v-divider />
+                            </template>
+                          </v-virtual-scroll>
+                        </v-card>
+                      </v-col>
+                    </v-row>
                   </v-card-text>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn text @click="addEditorDialog = false">
+                  <v-divider></v-divider>
+
+                  <v-card-actions
+                    :class="`d-flex ${
+                      isMobile ? 'flex-column-reverse' : 'justify-end'
+                    }`"
+                  >
+                    <v-btn
+                      text
+                      @click="uploadJsonOverlay = false"
+                      :block="isMobile"
+                      :class="isMobile ? 'mt-4' : ''"
+                    >
                       ยกเลิก
                     </v-btn>
-                    <v-btn color="success" @click="updateEditorFirebase('add')">
-                      เพิ่มรายชื่อ
+                    <v-btn
+                      color="primary"
+                      @click="handleUploadJsonSuccess('new')"
+                      :block="isMobile"
+                      :class="isMobile ? 'mt-4' : ''"
+                    >
+                      เริ่มต้นใหม่
+                    </v-btn>
+                    <v-btn
+                      color="success"
+                      :disabled="!isJsonSuccessUpload || saveEditor == ''"
+                      @click="handleUploadJsonSuccess('load')"
+                      :block="isMobile"
+                      :class="isMobile ? 'mt-4' : ''"
+                      >โหลดบันทึก</v-btn
+                    >
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <v-btn
+                block
+                color="success darken-1"
+                @click="firebaseSaveData(false)"
+                :class="`${isDataLoaded ? 'pulse-animation' : ''} mb-2`"
+                :disabled="!isDataLoaded"
+                x-large
+              >
+                <v-icon left>mdi-content-save</v-icon>
+                <span class="font-weight-bold">บันทึกไฟล์บันทึก </span>
+              </v-btn>
+              <v-dialog v-model="wipeFieldOverlay" persistent width="400">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="error"
+                    v-bind="attrs"
+                    v-on="on"
+                    block
+                    class="mb-2"
+                    :disabled="!isDataLoaded"
+                  >
+                    <v-icon left>mdi-alert-outline</v-icon>
+                    <span class="font-weight-bold">ล้างข้อมูล </span>
+                  </v-btn>
+                </template>
+                <v-card light class="d-flex flex-column pt-8">
+                  <v-icon style="font-size: 10rem" color="error darken-1">
+                    mdi-alert
+                  </v-icon>
+                  <span class="text-center" style="font-size: 1.5rem"
+                    >ล้างข้อมูลที่กำลังแสดงผลทั้งหมด</span
+                  >
+                  <v-divider class="mt-8"></v-divider>
+
+                  <v-card-actions class="d-flex justify-end">
+                    <v-btn
+                      color="accent"
+                      @click="wipeFieldOverlay = false"
+                      depressed
+                    >
+                      ยกเลิก
+                    </v-btn>
+                    <v-btn @click="wipeSaveData" text color="error"
+                      >ล้างข้อมูล</v-btn
+                    >
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <v-divider class="my-8" />
+
+              <div class="d-flex align-center mb-2 mt-8">
+                <h3>รายชื่อผู้แก้ไข (ทั้งหมด)</h3>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      :color="$vuetify.theme.isDark ? 'white' : 'black'"
+                      dense
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      class="ml-2"
+                    >
+                      mdi-information-outline
+                    </v-icon>
+                  </template>
+                  <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+                </v-tooltip>
+                <v-icon
+                  dense
+                  class="ml-2"
+                  @click="readEditorsFirebase()"
+                  :color="
+                    $vuetify.theme.isDark
+                      ? 'primary lighten-4'
+                      : 'primary darken-2'
+                  "
+                  :disabled="loading"
+                  >mdi-reload</v-icon
+                >
+                <v-spacer />
+                <v-dialog v-model="addEditorDialog" max-width="500px">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="success darken-1"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <v-icon> mdi-plus </v-icon>
+                      เพิ่มผู้แก้ไข
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title> เพิ่มผู้มีสิทธิ์แก้ไข </v-card-title>
+
+                    <v-card-text class="pb-0">
+                      <v-text-field
+                        outlined
+                        label="ชื่อผู้แก้ไข"
+                        :rules="[required]"
+                        v-model="addNewEditorName"
+                      ></v-text-field>
+                    </v-card-text>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn text @click="addEditorDialog = false">
+                        ยกเลิก
+                      </v-btn>
+                      <v-btn
+                        color="success"
+                        @click="updateEditorFirebase('add')"
+                      >
+                        เพิ่มรายชื่อ
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </div>
+              <v-data-table
+                :loading="loading"
+                :headers="[
+                  { text: '#', value: 'index', sortable: false, width: '40' },
+                  { text: 'ชื่อผู้แก้ไข', value: 'name', sortable: false },
+                  {
+                    text: '',
+                    value: 'action',
+                    sortable: false,
+                    align: 'end',
+                  },
+                ]"
+                :items="saveEditors"
+                fixed-header
+                hide-default-footer
+                :items-per-page="9999"
+                class="elevation-1 mb-8"
+              >
+                <template v-slot:no-data> ไม่พบรายชื่อผู้แก้ไข </template>
+                <template v-slot:item.index="{ index }">
+                  {{ index + 1 }}
+                </template>
+                <template v-slot:item.name="props">
+                  <v-edit-dialog
+                    cancel-text="ยกเลิก"
+                    save-text="บันทึก"
+                    :return-value.sync="props.item.name"
+                    large
+                    persistent
+                    @save="updateEditorFirebase('update')"
+                  >
+                    <div class="py-2">{{ props.item.name }}</div>
+                    <template v-slot:input>
+                      <v-text-field
+                        v-model="props.item.name"
+                        :rules="[required]"
+                        single-line
+                        autofocus
+                        :color="
+                          $vuetify.theme.isDark
+                            ? 'primary lighten-4'
+                            : 'primary'
+                        "
+                      ></v-text-field>
+                    </template>
+                  </v-edit-dialog>
+                </template>
+                <template v-slot:item.action="{ item }">
+                  <v-icon
+                    color="error"
+                    @click="
+                      updateEditorFirebase('delete', saveEditors.indexOf(item))
+                    "
+                    class="ml-3"
+                    >mdi-delete</v-icon
+                  >
+                </template>
+              </v-data-table>
+              <v-dialog v-model="viewSaveDialog" max-width="1000" scrollable>
+                <v-card>
+                  <v-card-title class="text-h5"> ตัวอย่างบันทึก </v-card-title>
+
+                  <v-card-text>
+                    <pre>
+                    {{ JSON.stringify(viewSaveData, null, 2) }}
+                  </pre
+                    >
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+
+                    <v-btn color="accent" @click="viewSaveDialog = false">
+                      ปิด
                     </v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-            </div>
-            <v-data-table
-              :loading="loading"
-              :headers="[
-                { text: '#', value: 'index', sortable: false, width: '40' },
-                { text: 'ชื่อผู้แก้ไข', value: 'name', sortable: false },
-                {
-                  text: '',
-                  value: 'action',
-                  sortable: false,
-                  align: 'end',
-                },
-              ]"
-              :items="saveEditors"
-              fixed-header
-              hide-default-footer
-              :items-per-page="9999"
-              class="elevation-1 mb-8"
-            >
-              <template v-slot:no-data> ไม่พบรายชื่อผู้แก้ไข </template>
-              <template v-slot:item.index="{ index }">
-                {{ index + 1 }}
-              </template>
-              <template v-slot:item.name="props">
-                <v-edit-dialog
-                  cancel-text="ยกเลิก"
-                  save-text="บันทึก"
-                  :return-value.sync="props.item.name"
-                  large
-                  persistent
-                  @save="updateEditorFirebase('update')"
-                >
-                  <div class="py-2">{{ props.item.name }}</div>
-                  <template v-slot:input>
-                    <v-text-field
-                      v-model="props.item.name"
-                      :rules="[required]"
-                      single-line
-                      autofocus
-                      :color="
-                        $vuetify.theme.isDark ? 'primary lighten-4' : 'primary'
-                      "
-                    ></v-text-field>
-                  </template>
-                </v-edit-dialog>
-              </template>
-              <template v-slot:item.action="{ item }">
-                <v-icon
-                  color="error"
-                  @click="
-                    updateEditorFirebase('delete', saveEditors.indexOf(item))
-                  "
-                  class="ml-3"
-                  >mdi-delete</v-icon
-                >
-              </template>
-            </v-data-table>
-            <v-dialog v-model="viewSaveDialog" max-width="1000" scrollable>
-              <v-card>
-                <v-card-title class="text-h5"> ตัวอย่างบันทึก </v-card-title>
-
-                <v-card-text>
-                  <pre>
-                    {{ JSON.stringify(viewSaveData, null, 2) }}
-                  </pre>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-
-                  <v-btn color="accent" @click="viewSaveDialog = false">
-                    ปิด
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-            <div class="d-flex align-center mb-2">
-              <h3>รายการบันทึกออนไลน์ (ทั้งหมด)</h3>
-              <v-icon
-                dense
-                class="ml-2"
-                @click="readSaveDataFireBase()"
-                :color="
-                  $vuetify.theme.isDark
-                    ? 'primary lighten-4'
-                    : 'primary darken-2'
-                "
-                :disabled="loading"
-                >mdi-reload</v-icon
-              >
-            </div>
-            <v-data-table
-              :loading="loading"
-              :headers="[
-                {
-                  text: '#',
-                  value: 'index',
-                  sortable: false,
-                  align: 'center',
-                  width: '40',
-                },
-                { text: 'ชื่อบันทึก', value: 'metadata.name', sortable: false },
-                {
-                  text: 'แก้ไขล่าสุด',
-                  value: 'metadata.date_modified',
-                  sortable: false,
-                },
-                {
-                  text: 'สร้างเมื่อ',
-                  value: 'metadata.date_created',
-                  sortable: false,
-                },
-                {
-                  text: 'รหัสบันทึก',
-                  value: 'metadata.save_key',
-                  sortable: false,
-                },
-                {
-                  text: 'เวอร์ชั่นบันทึก',
-                  value: 'metadata.version',
-                  sortable: false,
-                },
-                {
-                  text: '',
-                  value: 'action',
-                  sortable: false,
-                  align: 'end',
-                },
-              ]"
-              :items="saveList"
-              :items-per-page="9999"
-              class="elevation-1 mb-8"
-              hide-default-footer
-              fixed-header
-            >
-              <template v-slot:no-data> ไม่พบรายการบันทึก </template>
-              <template v-slot:item.index="{ index }">
-                {{ index + 1 }}
-              </template>
-              <template v-slot:item.metadata.date_modified="{ item }">
-                {{ readableDateFormat(item.metadata.date_modified) }}
-              </template>
-              <template v-slot:item.metadata.date_created="{ item }">
-                {{ readableDateFormat(item.metadata.date_created) }}
-              </template>
-              <template v-slot:item.metadata.save_key="{ item }">
-                {{
-                  item.metadata.save_key && item.metadata.save_key.length > 5
-                    ? `${item.metadata.save_key.substring(0, 5)}....`
-                    : item.metadata.save_key || "ไม่พบรหัสบันทึก"
-                }}
-              </template>
-              <template v-slot:item.metadata.version="{ item }">
+              <div class="d-flex align-center mb-2">
+                <h3>รายการบันทึกออนไลน์ (ทั้งหมด)</h3>
                 <v-icon
                   dense
+                  class="ml-2"
+                  @click="readSaveDataFireBase()"
                   :color="
-                    item.metadata.version == '1.0.0' ? 'success' : 'error'
+                    $vuetify.theme.isDark
+                      ? 'primary lighten-4'
+                      : 'primary darken-2'
                   "
-                  >{{
-                    item.metadata.version == "1.0.0"
-                      ? "mdi-check-circle"
-                      : "mdi-close-circle"
-                  }}</v-icon
+                  :disabled="loading"
+                  >mdi-reload</v-icon
                 >
-                {{ item.metadata.version }}
-              </template>
-              <template v-slot:item.action="{ item }">
-                <v-icon
-                  color="primary"
-                  @click="(viewSaveDialog = true), (viewSaveData = item)"
-                >
-                  mdi-eye</v-icon
-                >
-                <v-icon
-                  color="error"
-                  @click="deleteSaveFromFireBase(item)"
-                  class="ml-3"
-                  >mdi-delete</v-icon
-                >
-              </template>
-            </v-data-table>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item value="officeItems" :class="isMobile ? 'px-8' : 'px-4'">
-        <v-row>
-          <v-col
-            cols="12"
-            v-if="SaveData.office && SaveData.office.list"
-            class="pb-8 pt-8"
-          >
-            <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
-              <fieldset
-                :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
-                  $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
-                }`"
-              >
-                <legend class="ml-1 px-2">
-                  รายการวัสดุสำนักงาน
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        :color="$vuetify.theme.isDark ? 'white' : 'black'"
-                        dense
-                        dark
-                        v-bind="attrs"
-                        v-on="on"
-                        class="ml-1"
-                      >
-                        mdi-information-outline
-                      </v-icon>
-                    </template>
-                    <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
-                  </v-tooltip>
-                </legend>
-                <div class="legend-right-office">
-                  <v-btn
-                    color="success darken-1"
-                    class="px-2"
-                    @click="addItems(-1, 'office')"
-                  >
-                    <v-icon> mdi-plus </v-icon>
-                    เพิ่มพัสดุ
-                  </v-btn>
-                </div>
-
-                <v-data-table
-                  :hide-default-header="
-                    SaveData.office.list[0].items.length === 0
-                  "
-                  hide-default-footer
-                  :headers="itemsHeader"
-                  :items="SaveData.office.list[0].items"
-                  :items-per-page="9999"
-                >
-                  <template v-slot:header.actions="{ header }">
-                    <v-icon
-                      @click="deleteAllItems(-1, 'office')"
-                      small
-                      color="error"
-                    >
-                      {{ header.text }}
-                    </v-icon>
-                  </template>
-                  <template v-slot:no-data> ยังไม่ได้เพิ่มพัสดุ </template>
-                  <template v-slot:item.index="props">
-                    {{ props.index + 1 }}
-                  </template>
-                  <template v-slot:item.name="props">
-                    <v-edit-dialog
-                      cancel-text="ยกเลิก"
-                      save-text="บันทึก"
-                      :return-value.sync="props.item.name"
-                      large
-                      persistent
-                    >
-                      <div class="py-2">{{ props.item.name }}</div>
-                      <template v-slot:input>
-                        <v-text-field
-                          v-model="props.item.name"
-                          :rules="[required]"
-                          single-line
-                          autofocus
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                        ></v-text-field>
-                      </template>
-                    </v-edit-dialog>
-                  </template>
-                  <template v-slot:item.quantity="props">
-                    <v-edit-dialog
-                      cancel-text="ยกเลิก"
-                      save-text="บันทึก"
-                      :return-value.sync="props.item.quantity"
-                      large
-                      persistent
-                    >
-                      <div>
-                        {{ formatNumberWithCommas(props.item.quantity) }}
-                      </div>
-                      <template v-slot:input>
-                        <v-text-field
-                          v-model="props.item.quantity"
-                          :rules="[required, isNumeric, max8chars]"
-                          single-line
-                          autofocus
-                          counter="8"
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                        ></v-text-field>
-                      </template>
-                    </v-edit-dialog>
-                  </template>
-                  <template v-slot:item.price="props">
-                    <v-edit-dialog
-                      cancel-text="ยกเลิก"
-                      save-text="บันทึก"
-                      :return-value.sync="props.item.price"
-                      large
-                      persistent
-                    >
-                      <div>
-                        {{
-                          formatNumberWithCommas(formatPrice(props.item.price))
-                        }}
-                      </div>
-                      <template v-slot:input>
-                        <v-text-field
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                          v-model="props.item.price"
-                          :rules="[required, isFloat]"
-                          single-line
-                          autofocus
-                        ></v-text-field>
-                      </template>
-                    </v-edit-dialog>
-                  </template>
-                  <template v-slot:item.unit="props">
-                    <v-edit-dialog
-                      :return-value.sync="props.item.unit"
-                      large
-                      persistent
-                      cancel-text="ยกเลิก"
-                      save-text="บันทึก"
-                    >
-                      <div>{{ props.item.unit }}</div>
-                      <template v-slot:input>
-                        <v-text-field
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                          v-model="props.item.unit"
-                          :rules="[required]"
-                          single-line
-                          autofocus
-                        ></v-text-field>
-                      </template>
-                    </v-edit-dialog>
-                  </template>
-                  <template v-slot:item.total="{ item }">
-                    {{
-                      formatNumberWithCommas(
-                        isNaN(item.quantity) || isNaN(item.price)
-                          ? Math.floor(0).toFixed(2)
-                          : (item.price * Math.floor(item.quantity)).toFixed(2)
-                      )
-                    }}
-                  </template>
-                  <template v-slot:item.actions="{ item }">
-                    <v-icon small @click="deleteItem(-1, item, 'office')">
-                      mdi-delete
-                    </v-icon>
-                  </template>
-                  <template slot="body.append">
-                    <tr v-if="SaveData.office.list[0].items.length > 0">
-                      <td></td>
-                      <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
-                      <td class="font-weight-bold text-center" colspan="3">
-                        {{ BahtText(sumField("price", "office")) }}
-                      </td>
-                      <td class="text-right">
-                        {{
-                          formatNumberWithCommas(
-                            sumField("price", "office").toFixed(2)
-                          )
-                        }}
-                      </td>
-                      <td></td>
-                    </tr>
-                  </template>
-                </v-data-table>
-              </fieldset>
-              <div class="d-flex justify-end">
-                <v-menu offset-y transition="slide-y-transition">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      v-bind="attrs"
-                      v-on="on"
-                      depressed
-                    >
-                      <v-icon left> mdi-printer </v-icon>
-                      พิมพ์รายการ
-                    </v-btn>
-                  </template>
-                  <v-list class="py-0">
-                    <v-list-item>
-                      <v-list-item-title class="px-0">
-                        <v-btn text block @click="exportPDF(-1, 'office')">
-                          PDF
-                        </v-btn>
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-divider />
-                  </v-list>
-                </v-menu>
               </div>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item value="singleTeacher" :class="isMobile ? 'px-8' : 'px-4'">
-        <v-row>
-          <v-col :sm="3" :cols="12" class="pt-8">
-            <v-card outlined class="py-2 rounded-xl elevation-2">
-              <v-card-title>รายชื่ออาจารย์</v-card-title>
-              <v-divider />
-              <v-navigation-drawer
-                color="transparent"
-                permanent
-                floating
-                class="px-4"
-                style="width: 100%"
-                v-if="SaveData.data && SaveData.data.list"
+              <v-data-table
+                :loading="loading"
+                :headers="[
+                  {
+                    text: '#',
+                    value: 'index',
+                    sortable: false,
+                    align: 'center',
+                    width: '40',
+                  },
+                  {
+                    text: 'ชื่อบันทึก',
+                    value: 'metadata.name',
+                    sortable: false,
+                  },
+                  {
+                    text: 'แก้ไขล่าสุด',
+                    value: 'metadata.date_modified',
+                    sortable: false,
+                  },
+                  {
+                    text: 'สร้างเมื่อ',
+                    value: 'metadata.date_created',
+                    sortable: false,
+                  },
+                  {
+                    text: 'รหัสบันทึก',
+                    value: 'metadata.save_key',
+                    sortable: false,
+                  },
+                  {
+                    text: 'เวอร์ชั่นบันทึก',
+                    value: 'metadata.version',
+                    sortable: false,
+                  },
+                  {
+                    text: '',
+                    value: 'action',
+                    sortable: false,
+                    align: 'end',
+                  },
+                ]"
+                :items="saveList"
+                :items-per-page="9999"
+                class="elevation-1 mb-8"
+                hide-default-footer
+                fixed-header
               >
-                <v-list dense>
-                  <v-list-item
-                    v-for="(teacher, index) in SaveData.data.list"
-                    :key="index"
-                    class="d-flex align-center"
-                  >
-                    <v-list-item-icon class="mr-2">
-                      <v-icon>mdi-minus</v-icon>
-                    </v-list-item-icon>
-
-                    <v-list-item-content>
-                      <v-list-item-title>
-                        {{ teacher.teacher_name }}
-                      </v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-navigation-drawer>
-            </v-card>
-          </v-col>
-          <v-col :sm="9" class="pb-8 pt-8">
-            <div v-if="SaveData.data && SaveData.data.list">
-              <v-card
-                v-for="(data, index) in SaveData.data.list"
-                :key="index"
-                class="mb-6 rounded-xl elevation-2 pt-4 pb-8"
-                outlined
-              >
-                <div class="delete-teacher">
-                  <v-btn
-                    color="error"
-                    depressed
-                    x-small
-                    style="
-                      border-radius: 0px 16px 0px 8px;
-                      height: 25px;
-                      width: 20px;
+                <template v-slot:no-data> ไม่พบรายการบันทึก </template>
+                <template v-slot:item.index="{ index }">
+                  {{ index + 1 }}
+                </template>
+                <template v-slot:item.metadata.date_modified="{ item }">
+                  {{ readableDateFormat(item.metadata.date_modified) }}
+                </template>
+                <template v-slot:item.metadata.date_created="{ item }">
+                  {{ readableDateFormat(item.metadata.date_created) }}
+                </template>
+                <template v-slot:item.metadata.save_key="{ item }">
+                  {{
+                    item.metadata.save_key && item.metadata.save_key.length > 5
+                      ? `${item.metadata.save_key.substring(0, 5)}....`
+                      : item.metadata.save_key || "ไม่พบรหัสบันทึก"
+                  }}
+                </template>
+                <template v-slot:item.metadata.version="{ item }">
+                  <v-icon
+                    dense
+                    :color="
+                      item.metadata.version == '1.0.0' ? 'success' : 'error'
                     "
-                    @click="deleteTeacher(index)"
+                    >{{
+                      item.metadata.version == "1.0.0"
+                        ? "mdi-check-circle"
+                        : "mdi-close-circle"
+                    }}</v-icon
                   >
-                    <v-icon dense> mdi-close </v-icon>
-                  </v-btn>
-                </div>
-                <v-card-text class="pb-0 px-8 d-flex align-center">
-                  <span class="mr-2">ชื่ออาจารย์:</span>
-                  <v-text-field
-                    outlined
-                    dense
-                    class="pt-0 mt-0"
-                    label="ชื่ออาจารย์"
-                    single-line
-                    v-model="data.teacher_name"
-                    hide-details
-                  ></v-text-field>
-                </v-card-text>
-                <v-card-text class="pb-0 px-8 d-flex align-center">
-                  <span class="mr-2">รายวิชา:</span>
-                  <v-text-field
-                    outlined
-                    dense
-                    class="pt-0 mt-0"
-                    label="รายวิชา"
-                    single-line
-                    v-model="data.subject"
-                    hide-details
-                  ></v-text-field>
-                </v-card-text>
-                <v-divider class="mt-6" />
+                  {{ item.metadata.version }}
+                </template>
+                <template v-slot:item.action="{ item }">
+                  <v-icon
+                    color="primary"
+                    @click="(viewSaveDialog = true), (viewSaveData = item)"
+                  >
+                    mdi-eye</v-icon
+                  >
+                  <v-icon
+                    color="error"
+                    @click="deleteSaveFromFireBase(item)"
+                    class="ml-3"
+                    >mdi-delete</v-icon
+                  >
+                </template>
+              </v-data-table>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+        <v-tab-item value="officeItems" :class="isMobile ? 'px-8' : 'px-4'">
+          <v-row>
+            <v-col
+              cols="12"
+              v-if="SaveData.office && SaveData.office.list"
+              class="pb-8 pt-8"
+            >
+              <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
                 <fieldset
-                  :class="`mt-6 mx-8 mb-4 pa-4 rounded-lg elevation-2 ${
+                  :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
                     $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
                   }`"
                 >
                   <legend class="ml-1 px-2">
-                    รายการวัสดุ
-                    <v-tooltip top>
+                    รายการวัสดุสำนักงาน
+                    <v-tooltip bottom>
                       <template v-slot:activator="{ on, attrs }">
                         <v-icon
                           :color="$vuetify.theme.isDark ? 'white' : 'black'"
@@ -952,26 +675,29 @@
                       <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
                     </v-tooltip>
                   </legend>
-                  <div class="legend-right-single">
+                  <div class="legend-right-office">
                     <v-btn
                       color="success darken-1"
                       class="px-2"
-                      @click="addItems(index, 'single')"
+                      @click="addItems(-1, 'office')"
                     >
                       <v-icon> mdi-plus </v-icon>
                       เพิ่มพัสดุ
                     </v-btn>
                   </div>
+
                   <v-data-table
-                    :hide-default-header="data.items.length === 0"
+                    :hide-default-header="
+                      SaveData.office.list[0].items.length === 0
+                    "
                     hide-default-footer
                     :headers="itemsHeader"
-                    :items="data.items"
+                    :items="SaveData.office.list[0].items"
                     :items-per-page="9999"
                   >
                     <template v-slot:header.actions="{ header }">
                       <v-icon
-                        @click="deleteAllItems(index, 'single')"
+                        @click="deleteAllItems(-1, 'office')"
                         small
                         color="error"
                       >
@@ -1008,11 +734,11 @@
                     </template>
                     <template v-slot:item.quantity="props">
                       <v-edit-dialog
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
                         :return-value.sync="props.item.quantity"
                         large
                         persistent
-                        cancel-text="ยกเลิก"
-                        save-text="บันทึก"
                       >
                         <div>
                           {{ formatNumberWithCommas(props.item.quantity) }}
@@ -1035,11 +761,11 @@
                     </template>
                     <template v-slot:item.price="props">
                       <v-edit-dialog
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
                         :return-value.sync="props.item.price"
                         large
                         persistent
-                        cancel-text="ยกเลิก"
-                        save-text="บันทึก"
                       >
                         <div>
                           {{
@@ -1050,15 +776,15 @@
                         </div>
                         <template v-slot:input>
                           <v-text-field
-                            v-model="props.item.price"
-                            :rules="[required, isFloat]"
-                            single-line
-                            autofocus
                             :color="
                               $vuetify.theme.isDark
                                 ? 'primary lighten-4'
                                 : 'primary'
                             "
+                            v-model="props.item.price"
+                            :rules="[required, isFloat]"
+                            single-line
+                            autofocus
                           ></v-text-field>
                         </template>
                       </v-edit-dialog>
@@ -1074,15 +800,15 @@
                         <div>{{ props.item.unit }}</div>
                         <template v-slot:input>
                           <v-text-field
-                            v-model="props.item.unit"
-                            :rules="[required]"
-                            single-line
-                            autofocus
                             :color="
                               $vuetify.theme.isDark
                                 ? 'primary lighten-4'
                                 : 'primary'
                             "
+                            v-model="props.item.unit"
+                            :rules="[required]"
+                            single-line
+                            autofocus
                           ></v-text-field>
                         </template>
                       </v-edit-dialog>
@@ -1099,21 +825,21 @@
                       }}
                     </template>
                     <template v-slot:item.actions="{ item }">
-                      <v-icon small @click="deleteItem(index, item, 'single')">
+                      <v-icon small @click="deleteItem(-1, item, 'office')">
                         mdi-delete
                       </v-icon>
                     </template>
                     <template slot="body.append">
-                      <tr v-if="data.items.length > 0">
+                      <tr v-if="SaveData.office.list[0].items.length > 0">
                         <td></td>
                         <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
                         <td class="font-weight-bold text-center" colspan="3">
-                          {{ BahtText(sumField("price", "single", index)) }}
+                          {{ BahtText(sumField("price", "office")) }}
                         </td>
                         <td class="text-right">
                           {{
                             formatNumberWithCommas(
-                              sumField("price", "single", index).toFixed(2)
+                              sumField("price", "office").toFixed(2)
                             )
                           }}
                         </td>
@@ -1122,7 +848,7 @@
                     </template>
                   </v-data-table>
                 </fieldset>
-                <div class="d-flex justify-end align-top px-8">
+                <div class="d-flex justify-end">
                   <v-menu offset-y transition="slide-y-transition">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
@@ -1139,7 +865,7 @@
                     <v-list class="py-0">
                       <v-list-item>
                         <v-list-item-title class="px-0">
-                          <v-btn text block @click="exportPDF(index, 'single')">
+                          <v-btn text block @click="exportPDF(-1, 'office')">
                             PDF
                           </v-btn>
                         </v-list-item-title>
@@ -1149,437 +875,789 @@
                   </v-menu>
                 </div>
               </v-card>
-            </div>
-
-            <v-btn
-              block
-              color="success darken-1"
-              @click="addTeacher"
-              large
-              depressed
-            >
-              <v-icon left>mdi-plus</v-icon>
-              เพิ่มอาจารย์
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item value="multiTeacher" :class="isMobile ? 'px-8' : 'px-4'">
-        <v-row>
-          <v-col :sm="12" class="pb-8 pt-8">
-            <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
-              <fieldset
-                :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
-                  $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
-                }`"
-              >
-                <legend class="ml-1 px-2">
-                  รวมอาจารย์
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        :color="$vuetify.theme.isDark ? 'white' : 'black'"
-                        dense
-                        dark
-                        v-bind="attrs"
-                        v-on="on"
-                        class="ml-1"
-                      >
-                        mdi-information-outline
-                      </v-icon>
-                    </template>
-                    <span
-                      >ลำดับของรายการ จะอิงตามจำนวนของรายการ
-                      ภายในวัสดุสำนักงาน</span
-                    >
-                  </v-tooltip>
-                </legend>
-                <v-data-table
-                  :hide-default-header="
-                    multiTeacherData.length > 0 ? false : true
-                  "
-                  hide-default-footer
-                  :headers="itemsHeader"
-                  :items-per-page="9999"
-                  :items="multiTeacherData.items"
+            </v-col>
+          </v-row>
+        </v-tab-item>
+        <v-tab-item value="singleTeacher" :class="isMobile ? 'px-8' : 'px-4'">
+          <v-row>
+            <v-col :sm="3" :cols="12" class="pt-8">
+              <v-card outlined class="py-2 rounded-xl elevation-2">
+                <v-card-title>รายชื่ออาจารย์</v-card-title>
+                <v-divider />
+                <v-navigation-drawer
+                  color="transparent"
+                  permanent
+                  floating
+                  class="px-4"
+                  style="width: 100%"
+                  v-if="SaveData.data && SaveData.data.list"
                 >
-                  <template v-slot:header.actions="{ header }"> </template>
-                  <template v-slot:no-data> ยังไม่ได้เพิ่มพัสดุ </template>
-                  <template v-slot:item.index="props">
-                    {{
-                      SaveData.office.list[0].items.length + (props.index + 1)
-                    }}
-                  </template>
-                  <template v-slot:item.quantity="props">
-                    {{ formatNumberWithCommas(props.item.quantity) }}
-                  </template>
-                  <template v-slot:item.price="props">
-                    {{ formatNumberWithCommas(formatPrice(props.item.price)) }}
-                  </template>
-                  <template v-slot:item.total="{ item }">
-                    {{
-                      formatNumberWithCommas(
-                        isNaN(item.quantity) || isNaN(item.price)
-                          ? Math.floor(0).toFixed(2)
-                          : (item.price * Math.floor(item.quantity)).toFixed(2)
-                      )
-                    }}
-                  </template>
-                  <template slot="body.append">
-                    <tr v-if="multiTeacherData.items.length > 0">
-                      <td></td>
-                      <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
-                      <td class="font-weight-bold text-center" colspan="3">
-                        {{ BahtText(sumField("total", "multi").toFixed(2)) }}
-                      </td>
-                      <td class="text-right">
-                        {{ sumField("total", "multi").toFixed(2) }}
-                      </td>
-                    </tr>
-                  </template>
-                </v-data-table>
-              </fieldset>
-              <div class="d-flex justify-end">
-                <v-menu offset-y transition="slide-y-transition">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      v-bind="attrs"
-                      v-on="on"
-                      depressed
+                  <v-list dense>
+                    <v-list-item
+                      v-for="(teacher, index) in SaveData.data.list"
+                      :key="index"
+                      class="d-flex align-center"
                     >
-                      <v-icon left> mdi-printer </v-icon>
-                      พิมพ์รายการ
-                    </v-btn>
-                  </template>
-                  <v-list class="py-0">
-                    <v-list-item>
-                      <v-list-item-title class="px-0">
-                        <v-btn text block @click="exportPDF(-1, 'multi')">
-                          PDF
-                        </v-btn>
-                      </v-list-item-title>
+                      <v-list-item-icon class="mr-2">
+                        <v-icon>mdi-minus</v-icon>
+                      </v-list-item-icon>
+
+                      <v-list-item-content>
+                        <v-list-item-title>
+                          {{ teacher.teacher_name }}
+                        </v-list-item-title>
+                      </v-list-item-content>
                     </v-list-item>
-                    <v-divider />
                   </v-list>
-                </v-menu>
-              </div> </v-card
-          ></v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item value="summary" :class="isMobile ? 'px-8' : 'px-4'">
-        <v-row>
-          <v-col :sm="12" class="pb-8 pt-8">
-            <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
-              <fieldset
-                :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
-                  $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
-                }`"
-              >
-                <legend class="ml-1 px-2">
-                  รายละเอียด
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon
-                        :color="$vuetify.theme.isDark ? 'white' : 'black'"
-                        dense
-                        dark
-                        v-bind="attrs"
-                        v-on="on"
-                        class="ml-1"
-                      >
-                        mdi-information-outline
-                      </v-icon>
-                    </template>
-                    <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
-                  </v-tooltip>
-                </legend>
-
-                <v-data-table
-                  :hide-default-header="summaryData.length > 0 ? false : true"
-                  hide-default-footer
-                  :headers="summaryHeader"
-                  :items-per-page="9999"
-                  :items="summaryData"
+                </v-navigation-drawer>
+              </v-card>
+            </v-col>
+            <v-col :sm="9" class="pb-8 pt-8">
+              <div v-if="SaveData.data && SaveData.data.list">
+                <v-card
+                  v-for="(data, index) in SaveData.data.list"
+                  :key="index"
+                  class="mb-6 rounded-xl elevation-2 pt-4 pb-8"
+                  outlined
                 >
-                  <template v-slot:no-data> ไม่พบรายการใด ๆ </template>
-                  <template v-slot:item.index="props">
-                    {{ props.index + 1 }}
-                  </template>
-                  <template v-slot:item.total="props">
-                    <div :key="props.item.total">
-                      <span
-                        :class="`${
-                          (
-                            parseFloat(props.item.opBudget) +
-                            parseFloat(props.item.subBudget)
-                          ).toFixed(2) > parseFloat(props.item.total).toFixed(2)
-                            ? 'red--text'
-                            : ''
-                        }`"
-                      >
-                        {{
-                          formatNumberWithCommas(formatPrice(props.item.total))
-                        }}
-                      </span>
-                      <i
-                        v-if="
-                          (
-                            parseFloat(props.item.opBudget) +
-                            parseFloat(props.item.subBudget)
-                          ).toFixed(2) > parseFloat(props.item.total).toFixed(2)
-                        "
-                      >
-                        <br />
-                        (+{{
-                          (
-                            parseFloat(props.item.opBudget) +
-                            parseFloat(props.item.subBudget) -
-                            parseFloat(props.item.total)
-                          ).toFixed(2)
-                        }})
-                      </i>
-                    </div>
-                  </template>
-
-                  <template v-slot:item.opBudget="props">
-                    <v-edit-dialog
-                      :return-value.sync="props.item.opBudget"
-                      large
-                      persistent
-                      cancel-text="ยกเลิก"
-                      save-text="บันทึก"
-                    >
-                      {{
-                        formatNumberWithCommas(formatPrice(props.item.opBudget))
-                      }}
-                      <template v-slot:input>
-                        <v-text-field
-                          v-model="props.item.opBudget"
-                          :rules="[required, isFloat]"
-                          single-line
-                          autofocus
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                        ></v-text-field>
-                      </template>
-                    </v-edit-dialog>
-                  </template>
-                  <template v-slot:item.subBudget="props">
-                    <v-edit-dialog
-                      :return-value.sync="props.item.subBudget"
-                      large
-                      persistent
-                      cancel-text="ยกเลิก"
-                      save-text="บันทึก"
-                    >
-                      {{
-                        formatNumberWithCommas(
-                          formatPrice(props.item.subBudget)
-                        )
-                      }}
-                      <template v-slot:input>
-                        <v-text-field
-                          :color="
-                            $vuetify.theme.isDark
-                              ? 'primary lighten-4'
-                              : 'primary'
-                          "
-                          v-model="props.item.subBudget"
-                          :rules="[required, isFloat]"
-                          single-line
-                          autofocus
-                        ></v-text-field>
-                      </template>
-                    </v-edit-dialog>
-                  </template>
-                  <template v-slot:header.productivity="{ header }">
-                    {{ header.text }} (
-                    {{
-                      SaveData &&
-                      SaveData.productivity &&
-                      SaveData.productivity.percentage
-                        ? SaveData.productivity.percentage
-                        : 0
-                    }}%)
-                  </template>
-                  <template v-slot:item.productivity="props">
-                    {{
-                      props.item.subject != "วัสดุสำนักงานสาขาเทคโนโลยีสารสนเทศ"
-                        ? formatNumberWithCommas(
-                            (
-                              props.item.total *
-                              (props.item.productivity / 100)
-                            ).toFixed(2)
-                          )
-                        : "-"
-                    }}
-                  </template>
-                  <template slot="body.append">
-                    <tr v-if="summaryData.length > 0">
-                      <td></td>
-                      <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
-                      <td class="font-weight-bold text-center">
-                        {{ BahtText(sumField("total", "summary")) }}
-                      </td>
-                      <td class="text-right">
-                        {{ sumField("total", "summary").toFixed(2) }}
-                      </td>
-                      <td class="text-right">
-                        {{ sumField("opBudget", "summary").toFixed(2) }}
-                      </td>
-                      <td class="text-right">
-                        {{ sumField("subBudget", "summary").toFixed(2) }}
-                      </td>
-                      <td class="text-right">
-                        {{
-                          sumField(
-                            "productivity",
-                            "summary",
-                            "isProductivity"
-                          ).toFixed(2)
-                        }}
-                      </td>
-                    </tr>
-                    <tr
-                      v-if="
-                        SaveData?.productivity?.percentage !== undefined &&
-                        summaryData.length > 0
+                  <div class="delete-teacher">
+                    <v-btn
+                      color="error"
+                      depressed
+                      x-small
+                      style="
+                        border-radius: 0px 16px 0px 8px;
+                        height: 25px;
+                        width: 20px;
                       "
+                      @click="deleteTeacher(index)"
                     >
-                      <td colspan="5"></td>
-                      <td class="text-right pt-4" colspan="2">
-                        <v-text-field
-                          v-model="SaveData.productivity.percentage"
-                          label="กำหนดเปอร์เซ็น"
-                          :rules="[required, isNumeric]"
-                          outlined
-                          counter
-                          maxlength="3"
-                          dense
-                        ></v-text-field>
-                      </td>
-                    </tr>
-                  </template>
-                </v-data-table>
-              </fieldset>
-              <div class="d-flex justify-end">
-                <v-menu offset-y transition="slide-y-transition">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      v-bind="attrs"
-                      v-on="on"
-                      depressed
-                    >
-                      <v-icon left> mdi-printer </v-icon>
-                      พิมพ์รายการ
+                      <v-icon dense> mdi-close </v-icon>
                     </v-btn>
-                  </template>
-                  <v-list class="py-0">
-                    <v-list-item>
-                      <v-list-item-title class="px-0">
-                        <v-btn text block @click="exportPDF(-1, 'summary')">
-                          PDF
+                  </div>
+                  <v-card-text class="pb-0 px-8 d-flex align-center">
+                    <span class="mr-2">ชื่ออาจารย์:</span>
+                    <v-text-field
+                      outlined
+                      dense
+                      class="pt-0 mt-0"
+                      label="ชื่ออาจารย์"
+                      single-line
+                      v-model="data.teacher_name"
+                      hide-details
+                    ></v-text-field>
+                  </v-card-text>
+                  <v-card-text class="pb-0 px-8 d-flex align-center">
+                    <span class="mr-2">รายวิชา:</span>
+                    <v-text-field
+                      outlined
+                      dense
+                      class="pt-0 mt-0"
+                      label="รายวิชา"
+                      single-line
+                      v-model="data.subject"
+                      hide-details
+                    ></v-text-field>
+                  </v-card-text>
+                  <v-divider class="mt-6" />
+                  <fieldset
+                    :class="`mt-6 mx-8 mb-4 pa-4 rounded-lg elevation-2 ${
+                      $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                    }`"
+                  >
+                    <legend class="ml-1 px-2">
+                      รายการวัสดุ
+                      <v-tooltip top>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            :color="$vuetify.theme.isDark ? 'white' : 'black'"
+                            dense
+                            dark
+                            v-bind="attrs"
+                            v-on="on"
+                            class="ml-1"
+                          >
+                            mdi-information-outline
+                          </v-icon>
+                        </template>
+                        <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+                      </v-tooltip>
+                    </legend>
+                    <div class="legend-right-single">
+                      <v-btn
+                        color="success darken-1"
+                        class="px-2"
+                        @click="addItems(index, 'single')"
+                      >
+                        <v-icon> mdi-plus </v-icon>
+                        เพิ่มพัสดุ
+                      </v-btn>
+                    </div>
+                    <v-data-table
+                      :hide-default-header="data.items.length === 0"
+                      hide-default-footer
+                      :headers="itemsHeader"
+                      :items="data.items"
+                      :items-per-page="9999"
+                    >
+                      <template v-slot:header.actions="{ header }">
+                        <v-icon
+                          @click="deleteAllItems(index, 'single')"
+                          small
+                          color="error"
+                        >
+                          {{ header.text }}
+                        </v-icon>
+                      </template>
+                      <template v-slot:no-data> ยังไม่ได้เพิ่มพัสดุ </template>
+                      <template v-slot:item.index="props">
+                        {{ props.index + 1 }}
+                      </template>
+                      <template v-slot:item.name="props">
+                        <v-edit-dialog
+                          cancel-text="ยกเลิก"
+                          save-text="บันทึก"
+                          :return-value.sync="props.item.name"
+                          large
+                          persistent
+                        >
+                          <div class="py-2">{{ props.item.name }}</div>
+                          <template v-slot:input>
+                            <v-text-field
+                              v-model="props.item.name"
+                              :rules="[required]"
+                              single-line
+                              autofocus
+                              :color="
+                                $vuetify.theme.isDark
+                                  ? 'primary lighten-4'
+                                  : 'primary'
+                              "
+                            ></v-text-field>
+                          </template>
+                        </v-edit-dialog>
+                      </template>
+                      <template v-slot:item.quantity="props">
+                        <v-edit-dialog
+                          :return-value.sync="props.item.quantity"
+                          large
+                          persistent
+                          cancel-text="ยกเลิก"
+                          save-text="บันทึก"
+                        >
+                          <div>
+                            {{ formatNumberWithCommas(props.item.quantity) }}
+                          </div>
+                          <template v-slot:input>
+                            <v-text-field
+                              v-model="props.item.quantity"
+                              :rules="[required, isNumeric, max8chars]"
+                              single-line
+                              autofocus
+                              counter="8"
+                              :color="
+                                $vuetify.theme.isDark
+                                  ? 'primary lighten-4'
+                                  : 'primary'
+                              "
+                            ></v-text-field>
+                          </template>
+                        </v-edit-dialog>
+                      </template>
+                      <template v-slot:item.price="props">
+                        <v-edit-dialog
+                          :return-value.sync="props.item.price"
+                          large
+                          persistent
+                          cancel-text="ยกเลิก"
+                          save-text="บันทึก"
+                        >
+                          <div>
+                            {{
+                              formatNumberWithCommas(
+                                formatPrice(props.item.price)
+                              )
+                            }}
+                          </div>
+                          <template v-slot:input>
+                            <v-text-field
+                              v-model="props.item.price"
+                              :rules="[required, isFloat]"
+                              single-line
+                              autofocus
+                              :color="
+                                $vuetify.theme.isDark
+                                  ? 'primary lighten-4'
+                                  : 'primary'
+                              "
+                            ></v-text-field>
+                          </template>
+                        </v-edit-dialog>
+                      </template>
+                      <template v-slot:item.unit="props">
+                        <v-edit-dialog
+                          :return-value.sync="props.item.unit"
+                          large
+                          persistent
+                          cancel-text="ยกเลิก"
+                          save-text="บันทึก"
+                        >
+                          <div>{{ props.item.unit }}</div>
+                          <template v-slot:input>
+                            <v-text-field
+                              v-model="props.item.unit"
+                              :rules="[required]"
+                              single-line
+                              autofocus
+                              :color="
+                                $vuetify.theme.isDark
+                                  ? 'primary lighten-4'
+                                  : 'primary'
+                              "
+                            ></v-text-field>
+                          </template>
+                        </v-edit-dialog>
+                      </template>
+                      <template v-slot:item.total="{ item }">
+                        {{
+                          formatNumberWithCommas(
+                            isNaN(item.quantity) || isNaN(item.price)
+                              ? Math.floor(0).toFixed(2)
+                              : (
+                                  item.price * Math.floor(item.quantity)
+                                ).toFixed(2)
+                          )
+                        }}
+                      </template>
+                      <template v-slot:item.actions="{ item }">
+                        <v-icon
+                          small
+                          @click="deleteItem(index, item, 'single')"
+                        >
+                          mdi-delete
+                        </v-icon>
+                      </template>
+                      <template slot="body.append">
+                        <tr v-if="data.items.length > 0">
+                          <td></td>
+                          <td class="text-right font-weight-bold">
+                            รวมทั้งสิ้น
+                          </td>
+                          <td class="font-weight-bold text-center" colspan="3">
+                            {{ BahtText(sumField("price", "single", index)) }}
+                          </td>
+                          <td class="text-right">
+                            {{
+                              formatNumberWithCommas(
+                                sumField("price", "single", index).toFixed(2)
+                              )
+                            }}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </template>
+                    </v-data-table>
+                  </fieldset>
+                  <div class="d-flex justify-end align-top px-8">
+                    <v-menu offset-y transition="slide-y-transition">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                          color="primary"
+                          dark
+                          v-bind="attrs"
+                          v-on="on"
+                          depressed
+                        >
+                          <v-icon left> mdi-printer </v-icon>
+                          พิมพ์รายการ
                         </v-btn>
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-divider />
-                  </v-list>
-                </v-menu>
-              </div> </v-card
-          ></v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item value="other" :class="isMobile ? 'px-8' : 'px-4'">
-        <v-row>
-          <v-col :sm="12" class="pb-8 pt-8">
-            <v-card
-              v-if="isDataLoaded && SaveData.metadata"
-              outlined
-              class="mb-6 rounded-xl elevation-2"
-            >
-              <v-card-title>เอกสาร 1</v-card-title>
-              <v-divider />
-              <v-card-text class="py-8 px-8">
+                      </template>
+                      <v-list class="py-0">
+                        <v-list-item>
+                          <v-list-item-title class="px-0">
+                            <v-btn
+                              text
+                              block
+                              @click="exportPDF(index, 'single')"
+                            >
+                              PDF
+                            </v-btn>
+                          </v-list-item-title>
+                        </v-list-item>
+                        <v-divider />
+                      </v-list>
+                    </v-menu>
+                  </div>
+                </v-card>
+              </div>
+
+              <v-btn
+                block
+                color="success darken-1"
+                @click="addTeacher"
+                large
+                depressed
+              >
+                <v-icon left>mdi-plus</v-icon>
+                เพิ่มอาจารย์
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+        <v-tab-item value="multiTeacher" :class="isMobile ? 'px-8' : 'px-4'">
+          <v-row>
+            <v-col :sm="12" class="pb-8 pt-8">
+              <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
                 <fieldset
-                  :class="`pa-4 rounded-lg elevation-2 ${
+                  :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
                     $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
                   }`"
                 >
-                  <legend class="ml-1 px-2">ข้อมูลเอกสาร</legend>
-                  <v-text-field label="Outlined" outlined></v-text-field>
-                  <v-text-field label="Outlined" outlined></v-text-field>
-                  <v-text-field label="Outlined" outlined></v-text-field>
-                  <v-textarea
-                    outlined
-                    name="input-7-4"
-                    label="Outlined textarea"
-                    value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
-                  ></v-textarea>
-                  <v-textarea
-                    outlined
-                    name="input-7-4"
-                    label="Outlined textarea"
-                    value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
-                  ></v-textarea>
+                  <legend class="ml-1 px-2">
+                    รวมอาจารย์
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          :color="$vuetify.theme.isDark ? 'white' : 'black'"
+                          dense
+                          dark
+                          v-bind="attrs"
+                          v-on="on"
+                          class="ml-1"
+                        >
+                          mdi-information-outline
+                        </v-icon>
+                      </template>
+                      <span
+                        >ลำดับของรายการ จะอิงตามจำนวนของรายการ
+                        ภายในวัสดุสำนักงาน</span
+                      >
+                    </v-tooltip>
+                  </legend>
+                  <v-data-table
+                    :hide-default-header="
+                      multiTeacherData.length > 0 ? false : true
+                    "
+                    hide-default-footer
+                    :headers="itemsHeader"
+                    :items-per-page="9999"
+                    :items="multiTeacherData.items"
+                  >
+                    <template v-slot:header.actions="{ header }"> </template>
+                    <template v-slot:no-data> ยังไม่ได้เพิ่มพัสดุ </template>
+                    <template v-slot:item.index="props">
+                      {{
+                        SaveData.office.list[0].items.length + (props.index + 1)
+                      }}
+                    </template>
+                    <template v-slot:item.quantity="props">
+                      {{ formatNumberWithCommas(props.item.quantity) }}
+                    </template>
+                    <template v-slot:item.price="props">
+                      {{
+                        formatNumberWithCommas(formatPrice(props.item.price))
+                      }}
+                    </template>
+                    <template v-slot:item.total="{ item }">
+                      {{
+                        formatNumberWithCommas(
+                          isNaN(item.quantity) || isNaN(item.price)
+                            ? Math.floor(0).toFixed(2)
+                            : (item.price * Math.floor(item.quantity)).toFixed(
+                                2
+                              )
+                        )
+                      }}
+                    </template>
+                    <template slot="body.append">
+                      <tr v-if="multiTeacherData.items.length > 0">
+                        <td></td>
+                        <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
+                        <td class="font-weight-bold text-center" colspan="3">
+                          {{ BahtText(sumField("total", "multi").toFixed(2)) }}
+                        </td>
+                        <td class="text-right">
+                          {{ sumField("total", "multi").toFixed(2) }}
+                        </td>
+                      </tr>
+                    </template>
+                  </v-data-table>
                 </fieldset>
-              </v-card-text>
-              <v-card-actions class="d-flex justify-end px-8 py-4">
-                <v-menu offset-y transition="slide-y-transition">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      color="primary"
-                      dark
-                      v-bind="attrs"
-                      v-on="on"
-                      depressed
-                    >
-                      <v-icon left> mdi-printer </v-icon>
-                      พิมพ์เอกสาร
-                    </v-btn>
-                  </template>
-                  <v-list class="py-0">
-                    <v-list-item>
-                      <v-list-item-title class="px-0">
-                        <v-btn text block> PDF </v-btn>
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-divider />
-                  </v-list>
-                </v-menu>
-              </v-card-actions>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-    </v-tabs-items>
-    <v-snackbar
-      v-model="snackbar.status"
-      :color="snackbar.color"
-      bottom
-      right
-      :timeout="6000"
-      multi-line
-      :min-width="275"
-      :min-height="50"
-    >
-      <div class="d-flex justify-space-between">
-        <span class="text-right font-weight-bold" style="font-size: 1.1rem">{{
-          snackbar.text
-        }}</span>
-      </div>
-      <template v-slot:action="{ attrs }">
-        <v-btn color="white" icon v-bind="attrs" @click="snackbar = false">
-          <v-icon>mdi-close-thick</v-icon>
-        </v-btn>
-      </template>
-    </v-snackbar>
+                <div class="d-flex justify-end">
+                  <v-menu offset-y transition="slide-y-transition">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                        depressed
+                      >
+                        <v-icon left> mdi-printer </v-icon>
+                        พิมพ์รายการ
+                      </v-btn>
+                    </template>
+                    <v-list class="py-0">
+                      <v-list-item>
+                        <v-list-item-title class="px-0">
+                          <v-btn text block @click="exportPDF(-1, 'multi')">
+                            PDF
+                          </v-btn>
+                        </v-list-item-title>
+                      </v-list-item>
+                      <v-divider />
+                    </v-list>
+                  </v-menu>
+                </div> </v-card
+            ></v-col>
+          </v-row>
+        </v-tab-item>
+        <v-tab-item value="summary" :class="isMobile ? 'px-8' : 'px-4'">
+          <v-row>
+            <v-col :sm="12" class="pb-8 pt-8">
+              <v-card class="rounded-xl elevation-2 px-8 pt-4 pb-8" outlined>
+                <fieldset
+                  :class="`mt-3 mb-5 pa-4 rounded-lg elevation-2 ${
+                    $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                  }`"
+                >
+                  <legend class="ml-1 px-2">
+                    รายละเอียด
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          :color="$vuetify.theme.isDark ? 'white' : 'black'"
+                          dense
+                          dark
+                          v-bind="attrs"
+                          v-on="on"
+                          class="ml-1"
+                        >
+                          mdi-information-outline
+                        </v-icon>
+                      </template>
+                      <span>สามารถคลิกที่รายการเพื่อแก้ไขได้</span>
+                    </v-tooltip>
+                  </legend>
+
+                  <v-data-table
+                    :hide-default-header="summaryData.length > 0 ? false : true"
+                    hide-default-footer
+                    :headers="summaryHeader"
+                    :items-per-page="9999"
+                    :items="summaryData"
+                  >
+                    <template v-slot:no-data> ไม่พบรายการใด ๆ </template>
+                    <template v-slot:item.index="props">
+                      {{ props.index + 1 }}
+                    </template>
+                    <template v-slot:item.total="props">
+                      <div :key="props.item.total">
+                        <span
+                          :class="`${
+                            (
+                              parseFloat(props.item.opBudget) +
+                              parseFloat(props.item.subBudget)
+                            ).toFixed(2) >
+                            parseFloat(props.item.total).toFixed(2)
+                              ? 'red--text'
+                              : ''
+                          }`"
+                        >
+                          {{
+                            formatNumberWithCommas(
+                              formatPrice(props.item.total)
+                            )
+                          }}
+                        </span>
+                        <i
+                          v-if="
+                            (
+                              parseFloat(props.item.opBudget) +
+                              parseFloat(props.item.subBudget)
+                            ).toFixed(2) >
+                            parseFloat(props.item.total).toFixed(2)
+                          "
+                        >
+                          <br />
+                          (+{{
+                            (
+                              parseFloat(props.item.opBudget) +
+                              parseFloat(props.item.subBudget) -
+                              parseFloat(props.item.total)
+                            ).toFixed(2)
+                          }})
+                        </i>
+                      </div>
+                    </template>
+
+                    <template v-slot:item.opBudget="props">
+                      <v-edit-dialog
+                        :return-value.sync="props.item.opBudget"
+                        large
+                        persistent
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
+                      >
+                        {{
+                          formatNumberWithCommas(
+                            formatPrice(props.item.opBudget)
+                          )
+                        }}
+                        <template v-slot:input>
+                          <v-text-field
+                            v-model="props.item.opBudget"
+                            :rules="[required, isFloat]"
+                            single-line
+                            autofocus
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
+                          ></v-text-field>
+                        </template>
+                      </v-edit-dialog>
+                    </template>
+                    <template v-slot:item.subBudget="props">
+                      <v-edit-dialog
+                        :return-value.sync="props.item.subBudget"
+                        large
+                        persistent
+                        cancel-text="ยกเลิก"
+                        save-text="บันทึก"
+                      >
+                        {{
+                          formatNumberWithCommas(
+                            formatPrice(props.item.subBudget)
+                          )
+                        }}
+                        <template v-slot:input>
+                          <v-text-field
+                            :color="
+                              $vuetify.theme.isDark
+                                ? 'primary lighten-4'
+                                : 'primary'
+                            "
+                            v-model="props.item.subBudget"
+                            :rules="[required, isFloat]"
+                            single-line
+                            autofocus
+                          ></v-text-field>
+                        </template>
+                      </v-edit-dialog>
+                    </template>
+                    <template v-slot:header.productivity="{ header }">
+                      {{ header.text }} (
+                      {{
+                        SaveData &&
+                        SaveData.productivity &&
+                        SaveData.productivity.percentage
+                          ? SaveData.productivity.percentage
+                          : 0
+                      }}%)
+                    </template>
+                    <template v-slot:item.productivity="props">
+                      {{
+                        props.item.subject !=
+                        "วัสดุสำนักงานสาขาเทคโนโลยีสารสนเทศ"
+                          ? formatNumberWithCommas(
+                              (
+                                props.item.total *
+                                (props.item.productivity / 100)
+                              ).toFixed(2)
+                            )
+                          : "-"
+                      }}
+                    </template>
+                    <template slot="body.append">
+                      <tr v-if="summaryData.length > 0">
+                        <td></td>
+                        <td class="text-right font-weight-bold">รวมทั้งสิ้น</td>
+                        <td class="font-weight-bold text-center">
+                          {{ BahtText(sumField("total", "summary")) }}
+                        </td>
+                        <td class="text-right">
+                          {{ sumField("total", "summary").toFixed(2) }}
+                        </td>
+                        <td class="text-right">
+                          {{ sumField("opBudget", "summary").toFixed(2) }}
+                        </td>
+                        <td class="text-right">
+                          {{ sumField("subBudget", "summary").toFixed(2) }}
+                        </td>
+                        <td class="text-right">
+                          {{
+                            sumField(
+                              "productivity",
+                              "summary",
+                              "isProductivity"
+                            ).toFixed(2)
+                          }}
+                        </td>
+                      </tr>
+                      <tr
+                        v-if="
+                          SaveData?.productivity?.percentage !== undefined &&
+                          summaryData.length > 0
+                        "
+                      >
+                        <td colspan="5"></td>
+                        <td class="text-right pt-4" colspan="2">
+                          <v-text-field
+                            v-model="SaveData.productivity.percentage"
+                            label="กำหนดเปอร์เซ็น"
+                            :rules="[required, isNumeric]"
+                            outlined
+                            counter
+                            maxlength="3"
+                            dense
+                          ></v-text-field>
+                        </td>
+                      </tr>
+                    </template>
+                  </v-data-table>
+                </fieldset>
+                <div class="d-flex justify-end">
+                  <v-menu offset-y transition="slide-y-transition">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                        depressed
+                      >
+                        <v-icon left> mdi-printer </v-icon>
+                        พิมพ์รายการ
+                      </v-btn>
+                    </template>
+                    <v-list class="py-0">
+                      <v-list-item>
+                        <v-list-item-title class="px-0">
+                          <v-btn text block @click="exportPDF(-1, 'summary')">
+                            PDF
+                          </v-btn>
+                        </v-list-item-title>
+                      </v-list-item>
+                      <v-divider />
+                    </v-list>
+                  </v-menu>
+                </div> </v-card
+            ></v-col>
+          </v-row>
+        </v-tab-item>
+        <v-tab-item value="other" :class="isMobile ? 'px-8' : 'px-4'">
+          <v-row>
+            <v-col :sm="12" class="pb-8 pt-8">
+              <v-card
+                v-if="isDataLoaded && SaveData.metadata"
+                outlined
+                class="mb-6 rounded-xl elevation-2"
+              >
+                <v-card-title>เอกสาร 1</v-card-title>
+                <v-divider />
+                <v-card-text class="py-8 px-8">
+                  <fieldset
+                    :class="`pa-4 rounded-lg elevation-2 ${
+                      $vuetify.theme.isDark ? 'dark-fieldset' : 'light-fieldset'
+                    }`"
+                  >
+                    <legend class="ml-1 px-2">ข้อมูลเอกสาร</legend>
+                    <v-text-field label="Outlined" outlined></v-text-field>
+                    <v-text-field label="Outlined" outlined></v-text-field>
+                    <v-text-field label="Outlined" outlined></v-text-field>
+                    <v-textarea
+                      outlined
+                      name="input-7-4"
+                      label="Outlined textarea"
+                      value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
+                    ></v-textarea>
+                    <v-textarea
+                      outlined
+                      name="input-7-4"
+                      label="Outlined textarea"
+                      value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
+                    ></v-textarea>
+                  </fieldset>
+                </v-card-text>
+                <v-card-actions class="d-flex justify-end px-8 py-4">
+                  <v-menu offset-y transition="slide-y-transition">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        color="primary"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                        depressed
+                      >
+                        <v-icon left> mdi-printer </v-icon>
+                        พิมพ์เอกสาร
+                      </v-btn>
+                    </template>
+                    <v-list class="py-0">
+                      <v-list-item>
+                        <v-list-item-title class="px-0">
+                          <v-btn text block> PDF </v-btn>
+                        </v-list-item-title>
+                      </v-list-item>
+                      <v-divider />
+                    </v-list>
+                  </v-menu>
+                </v-card-actions>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+      </v-tabs-items>
+      <v-snackbar
+        v-model="snackbar.status"
+        :color="snackbar.color"
+        bottom
+        right
+        :timeout="6000"
+        multi-line
+        :min-width="275"
+        :min-height="50"
+      >
+        <div class="d-flex justify-space-between">
+          <span class="text-right font-weight-bold" style="font-size: 1.1rem">{{
+            snackbar.text
+          }}</span>
+        </div>
+        <template v-slot:action="{ attrs }">
+          <v-btn color="white" icon v-bind="attrs" @click="snackbar = false">
+            <v-icon>mdi-close-thick</v-icon>
+          </v-btn>
+        </template>
+      </v-snackbar>
+      <!-- Hardcode Auth -->
+    </div>
+    <v-overlay :value="authStatus == false ? true : false" opacity="1">
+      <v-card light width="400" class="pb-4" :loading="loading">
+        <v-card-title>ใส่รหัสผ่าน สำหรับเข้าใช้งานชั่วคราว</v-card-title>
+
+        <div class="px-4">
+          <v-form ref="form" v-model="valid">
+            <v-text-field
+              outlined
+              label="รหัสผ่าน"
+              v-model="password"
+              :rules="[required]"
+            ></v-text-field>
+            <v-btn
+              color="success"
+              @click="checkPassword"
+              block
+              large
+              :disabled="!valid"
+            >
+              เข้าสู่ระบบ</v-btn
+            >
+          </v-form>
+        </div>
+      </v-card>
+    </v-overlay>
   </div>
 </template>
 
@@ -1692,6 +1770,9 @@ export default {
       addEditorDialog: false,
       addNewEditorName: "",
       tab: "index",
+      authStatus: false,
+      password: "",
+      valid: true,
       isNumeric: (v) => /^\d+$/.test(v) || "ต้องเป็นจำนวนเต็ม",
       max8chars: (v) => v.length <= 8 || "ไม่ควรเกิน 8 ตัวอักษร",
       required: (v) => v.length > 0 || "จำเป็นใส่ข้อมูล",
@@ -1784,6 +1865,21 @@ export default {
   },
   methods: {
     ...mapMutations("tab", ["changeTab"]),
+    async checkPassword() {
+      this.$refs.form.validate();
+      this.loading = true;
+      const delay = Math.floor(Math.random() * 1000) + 500;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      const password = "IT-c64735e";
+
+      if (this.password === password) {
+        this.authStatus = true;
+      } else {
+        alert("รหัสผ่านไม่ถูกต้อง");
+      }
+      this.loading = false;
+    },
     resizeHandler: debounce(function () {
       this.isMobile = window.innerWidth < 600 ? true : false;
     }, 100),
